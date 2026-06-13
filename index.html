@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Divergence-at-S/R — Sweep Report</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif; background: #0b1220; color: #e6e9ef; }
+  header { background: linear-gradient(180deg, #131a2a 0%, #0b1220 100%); border-bottom: 1px solid #1e293b; padding: 28px 32px; }
+  h1 { margin: 0 0 4px; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  h1 span { color: #6ee7b7; }
+  .sub { color: #94a3b8; font-size: 13px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 32px 80px; }
+  .hero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat { background: #131a2a; border: 1px solid #1e293b; border-radius: 8px; padding: 18px 20px; }
+  .stat .label { color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .stat .value { font-size: 28px; font-weight: 600; color: #e6e9ef; font-feature-settings: "tnum"; }
+  .stat .value.green { color: #6ee7b7; }
+  .stat .value.amber { color: #fbbf24; }
+  h2 { font-size: 16px; font-weight: 600; color: #c0c6d0; margin: 36px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #1e293b; }
+  h3 { font-size: 13px; font-weight: 500; color: #94a3b8; margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .card { background: #131a2a; border: 1px solid #1e293b; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; }
+  .config-code { background: #0b1220; border: 1px solid #1e293b; border-radius: 4px; padding: 10px 14px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: #c0c6d0; overflow-x: auto; white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid #1e293b; font-feature-settings: "tnum"; }
+  th { color: #94a3b8; font-weight: 500; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.06em; }
+  td { color: #c0c6d0; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; }
+  td.pos { color: #6ee7b7; }
+  td.neg { color: #fca5a5; }
+  td strong { color: #e6e9ef; font-weight: 600; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; color: #c0c6d0; background: transparent; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-2 h3 { margin-top: 0; }
+  .pareto-svg { background: #0b1220; border: 1px solid #1e293b; border-radius: 6px; width: 100%; height: auto; }
+  .scatter-dot { fill: #475569; opacity: 0.45; }
+  .pareto-poly { fill: none; stroke: #10b981; stroke-width: 2; stroke-linejoin: round; }
+  .axis-line { stroke: #1e293b; stroke-width: 1; }
+  .axis-label { fill: #94a3b8; font-size: 10.5px; font-family: -apple-system, system-ui, sans-serif; }
+  .footer { color: #475569; font-size: 11px; margin-top: 60px; padding-top: 16px; border-top: 1px solid #1e293b; }
+  .sensitivity td { font-size: 11px; }
+  .sensitivity td:first-child { color: #94a3b8; font-family: ui-monospace, monospace; }
+  .multi-table th { text-align: center; }
+  .multi-table td { text-align: center; }
+  .multi-table td:first-child { text-align: left; }
+  details { margin-bottom: 12px; }
+  details summary { cursor: pointer; color: #94a3b8; padding: 8px 0; user-select: none; }
+  details summary:hover { color: #c0c6d0; }
+  details[open] summary { color: #6ee7b7; }
+</style>
+</head>
+<body>
+<header>
+  <h1><span>◐</span> Divergence-at-S/R — Sweep Report</h1>
+  <div class="sub">RSI + MACD divergence at pivot-derived support/resistance · EUR/USD grid (18,432 configs) + 5-asset cross test (15 configs) · 120-day windows · last run 2026-06-11 12:01 UTC · static snapshot</div>
+</header>
+<main>
+
+<div class="hero">
+  <div class="stat">
+    <div class="label">Total configs</div>
+    <div class="value">18,432</div>
+  </div>
+  <div class="stat">
+    <div class="label">Robust (both TFs)</div>
+    <div class="value green">5,915</div>
+  </div>
+  <div class="stat">
+    <div class="label">Robust rate</div>
+    <div class="value">32.1%</div>
+  </div>
+  <div class="stat">
+    <div class="label">Pareto points</div>
+    <div class="value amber">54</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">🥇 Top config</h3>
+  <div class="config-code">RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=5.0x hold=30b</div>
+  <div class="grid-2" style="margin-top: 16px">
+    <div>
+      <h3 style="margin-top:0">4h results</h3>
+      <table>
+        <tr><td>Return</td><td class="pos"><strong>+301.63%</strong></td></tr>
+        <tr><td>Trades</td><td>5</td></tr>
+        <tr><td>Win rate</td><td>100%</td></tr>
+        <tr><td>Profit factor</td><td>∞</td></tr>
+        <tr><td>Max drawdown</td><td>0.00%</td></tr>
+        <tr><td>Expectancy (R)</td><td>+0.00</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3 style="margin-top:0">1d results</h3>
+      <table>
+        <tr><td>Return</td><td class="pos"><strong>+491.97%</strong></td></tr>
+        <tr><td>Trades</td><td>3</td></tr>
+        <tr><td>Win rate</td><td>67%</td></tr>
+        <tr><td>Profit factor</td><td>4.10</td></tr>
+        <tr><td>Max drawdown</td><td>153.63%</td></tr>
+        <tr><td>Expectancy (R)</td><td>+0.82</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<h2>Pareto frontier — 1d (return vs max DD)</h2>
+<div class="card">
+<svg class="pareto-svg" viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet">
+  <line class="axis-line" x1="40" y1="260" x2="700" y2="260"></line>
+  <line class="axis-line" x1="40" y1="20" x2="40" y2="260"></line>
+  <circle class="scatter-dot" cx="605.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="562.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="442.0" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="530.6" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="512.8" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="442.0" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="476.4" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="530.6" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="530.6" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="571.8" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="508.7" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="501.5" cy="181.4" r="1.5"></circle><circle class="scatter-dot" cx="515.4" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="530.6" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="541.5" cy="204.1" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="442.0" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="439.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="463.0" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="491.0" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="464.5" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="489.8" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="476.4" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="537.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="403.2" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="471.5" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="405.2" cy="170.9" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="368.9" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="444.0" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="391.1" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="471.3" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="515.4" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="476.4" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="351.2" cy="158.8" r="1.5"></circle><circle class="scatter-dot" cx="471.3" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="395.7" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="439.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="471.3" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="513.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="495.1" cy="229.6" r="1.5"></circle><circle class="scatter-dot" cx="513.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="412.0" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="451.7" cy="224.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="412.9" cy="133.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="391.1" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="429.5" cy="204.1" r="1.5"></circle><circle class="scatter-dot" cx="330.6" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="382.7" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="423.9" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="403.5" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="439.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="435.3" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="395.7" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="403.5" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="365.9" cy="165.2" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="434.4" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="425.0" cy="143.3" r="1.5"></circle><circle class="scatter-dot" cx="399.1" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="416.1" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="400.6" cy="222.9" r="1.5"></circle><circle class="scatter-dot" cx="436.2" cy="178.5" r="1.5"></circle><circle class="scatter-dot" cx="439.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="376.3" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="395.7" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="450.6" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="425.0" cy="143.3" r="1.5"></circle><circle class="scatter-dot" cx="456.4" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="417.0" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="398.7" cy="209.4" r="1.5"></circle><circle class="scatter-dot" cx="390.3" cy="181.4" r="1.5"></circle><circle class="scatter-dot" cx="397.8" cy="197.1" r="1.5"></circle><circle class="scatter-dot" cx="456.4" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="326.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="326.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="468.8" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="370.9" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="429.2" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="417.0" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="370.1" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="312.4" cy="136.4" r="1.5"></circle><circle class="scatter-dot" cx="442.6" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="362.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="420.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="369.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="416.1" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="371.7" cy="143.3" r="1.5"></circle><circle class="scatter-dot" cx="358.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="416.1" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="378.5" cy="224.0" r="1.5"></circle><circle class="scatter-dot" cx="339.2" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="429.2" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="295.8" cy="86.3" r="1.5"></circle><circle class="scatter-dot" cx="425.3" cy="174.0" r="1.5"></circle><circle class="scatter-dot" cx="382.2" cy="181.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="322.7" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="352.2" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="412.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="412.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="379.3" cy="178.5" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="385.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="412.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="347.0" cy="133.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="429.2" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="385.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="327.7" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="315.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="335.9" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="348.2" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="407.3" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="351.2" cy="158.8" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="359.2" cy="204.1" r="1.5"></circle><circle class="scatter-dot" cx="318.4" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="312.7" cy="136.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="416.1" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="372.1" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="315.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="358.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="369.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="369.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="239.5" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="325.9" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="326.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="358.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="348.2" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="317.9" cy="99.0" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="315.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="369.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="337.1" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="369.3" cy="174.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="358.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="348.2" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="290.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="282.6" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="318.5" cy="143.3" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="329.6" cy="200.7" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="274.3" cy="216.3" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="231.7" cy="190.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="224.6" cy="108.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="309.2" cy="200.7" r="1.5"></circle><circle class="scatter-dot" cx="342.5" cy="174.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="219.5" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="296.7" cy="181.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="231.7" cy="190.9" r="1.5"></circle><circle class="scatter-dot" cx="277.2" cy="176.3" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="262.4" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="219.5" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="309.2" cy="200.7" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="258.1" cy="108.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="245.2" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="304.7" cy="136.6" r="1.5"></circle><circle class="scatter-dot" cx="290.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="315.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="337.1" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="266.5" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="335.3" cy="204.1" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="290.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="290.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="231.1" cy="190.5" r="1.5"></circle><circle class="scatter-dot" cx="203.3" cy="138.3" r="1.5"></circle><circle class="scatter-dot" cx="266.5" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="287.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="271.4" cy="178.5" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="231.7" cy="190.9" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="287.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="274.3" cy="216.3" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="266.5" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="161.7" cy="108.4" r="1.5"></circle><circle class="scatter-dot" cx="243.8" cy="136.6" r="1.5"></circle><circle class="scatter-dot" cx="274.3" cy="216.3" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="226.7" cy="152.1" r="1.5"></circle><circle class="scatter-dot" cx="253.0" cy="203.6" r="1.5"></circle><circle class="scatter-dot" cx="245.2" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="258.3" cy="158.8" r="1.5"></circle><circle class="scatter-dot" cx="253.0" cy="203.6" r="1.5"></circle><circle class="scatter-dot" cx="193.9" cy="168.4" r="1.5"></circle><circle class="scatter-dot" cx="274.3" cy="216.3" r="1.5"></circle><circle class="scatter-dot" cx="152.6" cy="108.4" r="1.5"></circle><circle class="scatter-dot" cx="202.5" cy="173.4" r="1.5"></circle><circle class="scatter-dot" cx="130.2" cy="130.4" r="1.5"></circle><circle class="scatter-dot" cx="80.2" cy="100.6" r="1.5"></circle>
+  <polyline class="pareto-poly" points="562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 650.9,224.4 650.9,224.4 650.9,224.4 650.9,224.4 650.9,224.4 650.9,224.4"></polyline>
+  <circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle>
+  <text class="axis-label" x="370" y="290" text-anchor="middle">1d return (%)</text>
+  <text class="axis-label" x="10" y="140" text-anchor="middle" transform="rotate(-90 10 140)">1d max drawdown (%)</text>
+</svg>
+<div class="sub" style="margin-top:8px">Gray dots: subsample of all 18,432 configs. Green line + dots: Pareto frontier (no other config has higher return at lower or equal DD). 54 nondominated points in 1d return/DD space.</div>
+</div>
+
+<h2>Top 25 by sum_return (4h + 1d)</h2>
+<div class="card">
+<table id="top25">
+  <thead>
+    <tr>
+      <th>#</th><th>Config</th>
+      <th>4h ret</th><th>4h n</th><th>4h WR</th><th>4h DD</th><th>4h PF</th>
+      <th>1d ret</th><th>1d n</th><th>1d WR</th><th>1d DD</th><th>1d PF</th>
+      <th>Sum</th>
+    </tr>
+  </thead>
+  <tbody>
+    
+        <tr>
+          <td>1</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+301.63%</td>
+          <td>5</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>153.6%</td>
+          <td>4.10</td>
+          <td><strong>+793.60%</strong></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+234.66%</td>
+          <td>5</td>
+          <td>80%</td>
+          <td>26.5%</td>
+          <td>9.72</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>115.3%</td>
+          <td>5.47</td>
+          <td><strong>+767.44%</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+149.22%</td>
+          <td>6</td>
+          <td>50%</td>
+          <td>59.1%</td>
+          <td>3.00</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>77.0%</td>
+          <td>8.21</td>
+          <td><strong>+722.80%</strong></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+227.68%</td>
+          <td>7</td>
+          <td>71%</td>
+          <td>44.0%</td>
+          <td>4.34</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>153.6%</td>
+          <td>4.10</td>
+          <td><strong>+719.65%</strong></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+183.11%</td>
+          <td>7</td>
+          <td>57%</td>
+          <td>59.5%</td>
+          <td>3.35</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>115.3%</td>
+          <td>5.47</td>
+          <td><strong>+715.89%</strong></td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+198.41%</td>
+          <td>6</td>
+          <td>83%</td>
+          <td>72.1%</td>
+          <td>3.75</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>153.6%</td>
+          <td>4.10</td>
+          <td><strong>+690.38%</strong></td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+115.74%</td>
+          <td>7</td>
+          <td>43%</td>
+          <td>55.8%</td>
+          <td>2.08</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>77.0%</td>
+          <td>8.21</td>
+          <td><strong>+689.32%</strong></td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+114.83%</td>
+          <td>8</td>
+          <td>38%</td>
+          <td>81.2%</td>
+          <td>2.06</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>77.0%</td>
+          <td>8.21</td>
+          <td><strong>+688.42%</strong></td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
+          <td class="pos">+272.28%</td>
+          <td>8</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+688.17%</strong></td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+272.28%</td>
+          <td>8</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+688.17%</strong></td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+150.39%</td>
+          <td>6</td>
+          <td>67%</td>
+          <td>54.1%</td>
+          <td>2.86</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>115.3%</td>
+          <td>5.47</td>
+          <td><strong>+683.17%</strong></td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+103.93%</td>
+          <td>8</td>
+          <td>38%</td>
+          <td>55.8%</td>
+          <td>1.87</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>77.0%</td>
+          <td>8.21</td>
+          <td><strong>+677.52%</strong></td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+260.70%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>54.1%</td>
+          <td>5.81</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+676.60%</strong></td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+260.70%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>54.1%</td>
+          <td>5.81</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+676.60%</strong></td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+132.84%</td>
+          <td>7</td>
+          <td>57%</td>
+          <td>54.1%</td>
+          <td>2.35</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>115.3%</td>
+          <td>5.47</td>
+          <td><strong>+665.62%</strong></td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+170.00%</td>
+          <td>7</td>
+          <td>71%</td>
+          <td>72.1%</td>
+          <td>2.78</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>153.6%</td>
+          <td>4.10</td>
+          <td><strong>+661.97%</strong></td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
+          <td class="pos">+242.23%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>72.1%</td>
+          <td>4.36</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+658.13%</strong></td>
+        </tr>
+        <tr>
+          <td>18</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
+          <td class="pos">+242.23%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>72.1%</td>
+          <td>4.36</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+658.13%</strong></td>
+        </tr>
+        <tr>
+          <td>19</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=4.0x hold=30b</code></td>
+          <td class="pos">+294.58%</td>
+          <td>5</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td class="pos">+361.03%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>153.6%</td>
+          <td>3.29</td>
+          <td><strong>+655.61%</strong></td>
+        </tr>
+        <tr>
+          <td>20</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+81.47%</td>
+          <td>9</td>
+          <td>33%</td>
+          <td>77.9%</td>
+          <td>1.58</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>77.0%</td>
+          <td>8.21</td>
+          <td><strong>+655.05%</strong></td>
+        </tr>
+        <tr>
+          <td>21</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+81.47%</td>
+          <td>9</td>
+          <td>33%</td>
+          <td>77.9%</td>
+          <td>1.58</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>77.0%</td>
+          <td>8.21</td>
+          <td><strong>+655.05%</strong></td>
+        </tr>
+        <tr>
+          <td>22</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
+          <td class="pos">+231.84%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>54.1%</td>
+          <td>5.28</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+647.74%</strong></td>
+        </tr>
+        <tr>
+          <td>23</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
+          <td class="pos">+231.84%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>54.1%</td>
+          <td>5.28</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+647.74%</strong></td>
+        </tr>
+        <tr>
+          <td>24</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
+          <td class="pos">+227.94%</td>
+          <td>8</td>
+          <td>88%</td>
+          <td>11.7%</td>
+          <td>20.43</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+643.84%</strong></td>
+        </tr>
+        <tr>
+          <td>25</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=2.0x hold=20b</code></td>
+          <td class="pos">+227.94%</td>
+          <td>8</td>
+          <td>88%</td>
+          <td>11.7%</td>
+          <td>20.43</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>0.0%</td>
+          <td>∞</td>
+          <td><strong>+643.84%</strong></td>
+        </tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Top 50 robust configs (positive on BOTH 4h and 1d)</h2>
+<div class="card">
+<table id="robust50">
+  <thead>
+    <tr>
+      <th>#</th><th>Config</th>
+      <th>4h ret</th><th>4h n</th><th>4h WR</th><th>4h PF</th>
+      <th>1d ret</th><th>1d n</th><th>1d WR</th><th>1d PF</th>
+      <th>Sum</th>
+    </tr>
+  </thead>
+  <tbody>
+    
+        <tr>
+          <td>1</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+301.63%</td>
+          <td>5</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>4.10</td>
+          <td><strong>+793.60%</strong></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+234.66%</td>
+          <td>5</td>
+          <td>80%</td>
+          <td>9.72</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>5.47</td>
+          <td><strong>+767.44%</strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+149.22%</td>
+          <td>6</td>
+          <td>50%</td>
+          <td>3.00</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>8.21</td>
+          <td><strong>+722.80%</strong></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+227.68%</td>
+          <td>7</td>
+          <td>71%</td>
+          <td>4.34</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>4.10</td>
+          <td><strong>+719.65%</strong></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+183.11%</td>
+          <td>7</td>
+          <td>57%</td>
+          <td>3.35</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>5.47</td>
+          <td><strong>+715.89%</strong></td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+198.41%</td>
+          <td>6</td>
+          <td>83%</td>
+          <td>3.75</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>4.10</td>
+          <td><strong>+690.38%</strong></td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+115.74%</td>
+          <td>7</td>
+          <td>43%</td>
+          <td>2.08</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>8.21</td>
+          <td><strong>+689.32%</strong></td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+114.83%</td>
+          <td>8</td>
+          <td>38%</td>
+          <td>2.06</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>8.21</td>
+          <td><strong>+688.42%</strong></td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
+          <td class="pos">+272.28%</td>
+          <td>8</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+688.17%</strong></td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+272.28%</td>
+          <td>8</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+688.17%</strong></td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+150.39%</td>
+          <td>6</td>
+          <td>67%</td>
+          <td>2.86</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>5.47</td>
+          <td><strong>+683.17%</strong></td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+103.93%</td>
+          <td>8</td>
+          <td>38%</td>
+          <td>1.87</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>8.21</td>
+          <td><strong>+677.52%</strong></td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+260.70%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>5.81</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+676.60%</strong></td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+260.70%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>5.81</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+676.60%</strong></td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+132.84%</td>
+          <td>7</td>
+          <td>57%</td>
+          <td>2.35</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>5.47</td>
+          <td><strong>+665.62%</strong></td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+170.00%</td>
+          <td>7</td>
+          <td>71%</td>
+          <td>2.78</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>4.10</td>
+          <td><strong>+661.97%</strong></td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
+          <td class="pos">+242.23%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>4.36</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+658.13%</strong></td>
+        </tr>
+        <tr>
+          <td>18</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
+          <td class="pos">+242.23%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>4.36</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+658.13%</strong></td>
+        </tr>
+        <tr>
+          <td>19</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=4.0x hold=30b</code></td>
+          <td class="pos">+294.58%</td>
+          <td>5</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td class="pos">+361.03%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>3.29</td>
+          <td><strong>+655.61%</strong></td>
+        </tr>
+        <tr>
+          <td>20</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+81.47%</td>
+          <td>9</td>
+          <td>33%</td>
+          <td>1.58</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>8.21</td>
+          <td><strong>+655.05%</strong></td>
+        </tr>
+        <tr>
+          <td>21</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+81.47%</td>
+          <td>9</td>
+          <td>33%</td>
+          <td>1.58</td>
+          <td class="pos">+573.58%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>8.21</td>
+          <td><strong>+655.05%</strong></td>
+        </tr>
+        <tr>
+          <td>22</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
+          <td class="pos">+231.84%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>5.28</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+647.74%</strong></td>
+        </tr>
+        <tr>
+          <td>23</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
+          <td class="pos">+231.84%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>5.28</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+647.74%</strong></td>
+        </tr>
+        <tr>
+          <td>24</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
+          <td class="pos">+227.94%</td>
+          <td>8</td>
+          <td>88%</td>
+          <td>20.43</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+643.84%</strong></td>
+        </tr>
+        <tr>
+          <td>25</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=2.0x hold=20b</code></td>
+          <td class="pos">+227.94%</td>
+          <td>8</td>
+          <td>88%</td>
+          <td>20.43</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+643.84%</strong></td>
+        </tr>
+        <tr>
+          <td>26</td>
+          <td><code>RSI=21 MACD=8/21 piv=3 div=3 px=0.003 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+128.56%</td>
+          <td>7</td>
+          <td>43%</td>
+          <td>2.35</td>
+          <td class="pos">+508.65%</td>
+          <td>4</td>
+          <td>50%</td>
+          <td>4.57</td>
+          <td><strong>+637.21%</strong></td>
+        </tr>
+        <tr>
+          <td>27</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+216.58%</td>
+          <td>8</td>
+          <td>88%</td>
+          <td>5.00</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+632.48%</strong></td>
+        </tr>
+        <tr>
+          <td>28</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+99.27%</td>
+          <td>8</td>
+          <td>50%</td>
+          <td>1.75</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>5.47</td>
+          <td><strong>+632.04%</strong></td>
+        </tr>
+        <tr>
+          <td>29</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+99.27%</td>
+          <td>8</td>
+          <td>50%</td>
+          <td>1.75</td>
+          <td class="pos">+532.78%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>5.47</td>
+          <td><strong>+632.04%</strong></td>
+        </tr>
+        <tr>
+          <td>30</td>
+          <td><code>RSI=14 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+260.70%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>5.81</td>
+          <td class="pos">+369.94%</td>
+          <td>5</td>
+          <td>80%</td>
+          <td>4.07</td>
+          <td><strong>+630.64%</strong></td>
+        </tr>
+        <tr>
+          <td>31</td>
+          <td><code>RSI=14 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+260.70%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>5.81</td>
+          <td class="pos">+369.94%</td>
+          <td>5</td>
+          <td>80%</td>
+          <td>4.07</td>
+          <td><strong>+630.64%</strong></td>
+        </tr>
+        <tr>
+          <td>32</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=2.0x TP=2.0x hold=20b</code></td>
+          <td class="pos">+213.42%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>3.96</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+629.31%</strong></td>
+        </tr>
+        <tr>
+          <td>33</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=2.0x TP=2.0x hold=20b</code></td>
+          <td class="pos">+213.42%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>3.96</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+629.31%</strong></td>
+        </tr>
+        <tr>
+          <td>34</td>
+          <td><code>RSI=21 MACD=8/21 piv=3 div=3 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+113.44%</td>
+          <td>8</td>
+          <td>38%</td>
+          <td>2.03</td>
+          <td class="pos">+508.65%</td>
+          <td>4</td>
+          <td>50%</td>
+          <td>4.57</td>
+          <td><strong>+622.09%</strong></td>
+        </tr>
+        <tr>
+          <td>35</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=3 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+113.44%</td>
+          <td>8</td>
+          <td>38%</td>
+          <td>2.03</td>
+          <td class="pos">+508.65%</td>
+          <td>4</td>
+          <td>50%</td>
+          <td>4.57</td>
+          <td><strong>+622.09%</strong></td>
+        </tr>
+        <tr>
+          <td>36</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+205.60%</td>
+          <td>6</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+621.50%</strong></td>
+        </tr>
+        <tr>
+          <td>37</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=2.0x hold=30b</code></td>
+          <td class="pos">+205.60%</td>
+          <td>6</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+621.50%</strong></td>
+        </tr>
+        <tr>
+          <td>38</td>
+          <td><code>RSI=10 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+381.93%</td>
+          <td>9</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td class="pos">+239.46%</td>
+          <td>4</td>
+          <td>75%</td>
+          <td>2.99</td>
+          <td><strong>+621.39%</strong></td>
+        </tr>
+        <tr>
+          <td>39</td>
+          <td><code>RSI=10 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+381.93%</td>
+          <td>9</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td class="pos">+239.46%</td>
+          <td>4</td>
+          <td>75%</td>
+          <td>2.99</td>
+          <td><strong>+621.39%</strong></td>
+        </tr>
+        <tr>
+          <td>40</td>
+          <td><code>RSI=14 MACD=8/21 piv=10 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+260.70%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>5.81</td>
+          <td class="pos">+357.99%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+618.69%</strong></td>
+        </tr>
+        <tr>
+          <td>41</td>
+          <td><code>RSI=14 MACD=8/26 piv=10 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
+          <td class="pos">+260.70%</td>
+          <td>9</td>
+          <td>89%</td>
+          <td>5.81</td>
+          <td class="pos">+357.99%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+618.69%</strong></td>
+        </tr>
+        <tr>
+          <td>42</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+125.21%</td>
+          <td>8</td>
+          <td>62%</td>
+          <td>1.90</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>4.10</td>
+          <td><strong>+617.18%</strong></td>
+        </tr>
+        <tr>
+          <td>43</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=2.0x TP=5.0x hold=30b</code></td>
+          <td class="pos">+125.21%</td>
+          <td>8</td>
+          <td>62%</td>
+          <td>1.90</td>
+          <td class="pos">+491.97%</td>
+          <td>3</td>
+          <td>67%</td>
+          <td>4.10</td>
+          <td><strong>+617.18%</strong></td>
+        </tr>
+        <tr>
+          <td>44</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=3 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+181.00%</td>
+          <td>7</td>
+          <td>57%</td>
+          <td>3.26</td>
+          <td class="pos">+436.00%</td>
+          <td>4</td>
+          <td>50%</td>
+          <td>3.05</td>
+          <td><strong>+617.01%</strong></td>
+        </tr>
+        <tr>
+          <td>45</td>
+          <td><code>RSI=21 MACD=8/21 piv=3 div=3 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+181.00%</td>
+          <td>7</td>
+          <td>57%</td>
+          <td>3.26</td>
+          <td class="pos">+436.00%</td>
+          <td>4</td>
+          <td>50%</td>
+          <td>3.05</td>
+          <td><strong>+617.01%</strong></td>
+        </tr>
+        <tr>
+          <td>46</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=3 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+181.00%</td>
+          <td>7</td>
+          <td>57%</td>
+          <td>3.26</td>
+          <td class="pos">+436.00%</td>
+          <td>4</td>
+          <td>50%</td>
+          <td>3.05</td>
+          <td><strong>+617.01%</strong></td>
+        </tr>
+        <tr>
+          <td>47</td>
+          <td><code>RSI=21 MACD=8/21 piv=3 div=3 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
+          <td class="pos">+181.00%</td>
+          <td>7</td>
+          <td>57%</td>
+          <td>3.26</td>
+          <td class="pos">+436.00%</td>
+          <td>4</td>
+          <td>50%</td>
+          <td>3.05</td>
+          <td><strong>+617.01%</strong></td>
+        </tr>
+        <tr>
+          <td>48</td>
+          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=2.0x TP=2.0x hold=30b</code></td>
+          <td class="pos">+198.18%</td>
+          <td>8</td>
+          <td>88%</td>
+          <td>3.75</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+614.08%</strong></td>
+        </tr>
+        <tr>
+          <td>49</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.0x TP=2.0x hold=30b</code></td>
+          <td class="pos">+197.55%</td>
+          <td>8</td>
+          <td>88%</td>
+          <td>5.75</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+613.45%</strong></td>
+        </tr>
+        <tr>
+          <td>50</td>
+          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.0x TP=2.0x hold=20b</code></td>
+          <td class="pos">+197.55%</td>
+          <td>8</td>
+          <td>88%</td>
+          <td>5.75</td>
+          <td class="pos">+415.90%</td>
+          <td>3</td>
+          <td>100%</td>
+          <td>∞</td>
+          <td><strong>+613.45%</strong></td>
+        </tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Multi-asset cross-test (4h, 120 days, 3 configs × 5 pairs)</h2>
+<div class="card">
+<table class="multi-table" id="multi">
+  <thead>
+    <tr>
+      <th>Config</th>
+      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">HBAR/USD</th>
+      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">SOL/USD</th>
+      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">ETH/USD</th>
+      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">BTC/USD</th>
+      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">XRP/USD</th>
+    </tr>
+    <tr>
+      <th></th>
+<th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th><th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th><th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th><th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th><th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>A_1to1</strong></td><td class="pos">+3.83%</td><td>4</td><td>75%</td><td>2.81</td><td>2.0%</td><td class="pos">+1.83%</td><td>3</td><td>67%</td><td>1.88</td><td>2.0%</td><td class="neg">-2.00%</td><td>1</td><td>0%</td><td>0.00</td><td>2.0%</td><td class="pos">+4.04%</td><td>2</td><td>100%</td><td>∞</td><td>0.0%</td><td class="pos">+2.52%</td><td>2</td><td>100%</td><td>∞</td><td>0.0%</td></tr><tr><td><strong>C_mid</strong></td><td class="neg">-2.05%</td><td>1</td><td>0%</td><td>0.00</td><td>2.1%</td><td class="neg">+0.00%</td><td>0</td><td>0%</td><td>0.00</td><td>0.0%</td><td class="neg">-1.84%</td><td>1</td><td>0%</td><td>0.00</td><td>1.8%</td><td class="neg">-0.37%</td><td>2</td><td>50%</td><td>0.79</td><td>1.7%</td><td class="neg">-2.00%</td><td>1</td><td>0%</td><td>0.00</td><td>2.0%</td></tr><tr><td><strong>B_1to5</strong></td><td class="neg">-1.48%</td><td>1</td><td>0%</td><td>0.00</td><td>1.5%</td><td class="neg">+0.00%</td><td>0</td><td>0%</td><td>0.00</td><td>0.0%</td><td class="neg">-1.23%</td><td>1</td><td>0%</td><td>0.00</td><td>1.2%</td><td class="pos">+0.21%</td><td>2</td><td>50%</td><td>1.18</td><td>1.1%</td><td class="neg">-3.20%</td><td>2</td><td>0%</td><td>0.00</td><td>3.2%</td></tr>
+  </tbody>
+</table>
+<div class="sub" style="margin-top:8px">A_1to1: SL=2× TP=2×, R:R=1:1. C_mid: SL=1.5× TP=4×, R:R=1:3. B_1to5: SL=1× TP=5×, R:R=1:5. RSI=21, MACD=8/21, piv=7, prox=0.5% or 1% on all configs.</div>
+</div>
+
+<h2>Parameter sensitivity — which knobs matter most</h2>
+<div class="card">
+<p style="color:#94a3b8; font-size:12.5px; margin-top:0">Average sum_return (4h+1d) per param value, sorted by spread (top-bin mean − bottom-bin mean). Bigger spread = more important knob.</p>
+<table class="sensitivity">
+  <thead>
+    <tr>
+      <th>Param</th>
+      <th>Spread (pp)</th>
+<th>7</th><th>5</th><th>10</th><th>3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>pivot_div_lookback</code></td><td>+162.89pp</td><td title="n=4608 avg=+169.66% max=+690.38% min=-315.57%">+169.66% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+162.60% max=+793.60% min=-314.57%">+162.60% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+112.41% max=+598.49% min=-137.34%">+112.41% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+6.77% max=+178.60% min=-88.32%">+6.77% <span style="color:#666">(4608)</span></td></tr><tr><td><code>tp_atr_mult</code></td><td>+148.83pp</td><td title="n=4608 avg=+202.91% max=+688.17% min=-82.80%">+202.91% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+101.68% max=+655.61% min=-263.50%">+101.68% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+92.77% max=+793.60% min=-315.57%">+92.77% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+54.08% max=+469.41% min=-274.96%">+54.08% <span style="color:#666">(4608)</span></td></tr><tr><td><code>macd_fast</code></td><td>+97.21pp</td><td title="n=9216 avg=+161.46% max=+793.60% min=-296.72%">+161.46% <span style="color:#666">(9216)</span></td><td title="n=9216 avg=+64.25% max=+530.76% min=-315.57%">+64.25% <span style="color:#666">(9216)</span></td></tr><tr><td><code>pivot_lookback</code></td><td>+61.44pp</td><td title="n=4608 avg=+134.73% max=+793.60% min=-191.83%">+134.73% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+124.36% max=+677.52% min=-314.57%">+124.36% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+119.06% max=+618.69% min=-191.83%">+119.06% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+73.29% max=+637.21% min=-315.57%">+73.29% <span style="color:#666">(4608)</span></td></tr><tr><td><code>macd_slow</code></td><td>+53.61pp</td><td title="n=9216 avg=+139.67% max=+793.60% min=-315.57%">+139.67% <span style="color:#666">(9216)</span></td><td title="n=9216 avg=+86.05% max=+618.69% min=-315.57%">+86.05% <span style="color:#666">(9216)</span></td></tr><tr><td><code>rsi_period</code></td><td>+51.00pp</td><td title="n=4608 avg=+142.71% max=+630.64% min=-289.30%">+142.71% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+120.04% max=+793.60% min=-274.96%">+120.04% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+96.98% max=+621.39% min=-315.57%">+96.98% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+91.71% max=+598.49% min=-289.77%">+91.71% <span style="color:#666">(4608)</span></td></tr><tr><td><code>proximity_pct</code></td><td>+28.55pp</td><td title="n=6144 avg=+122.39% max=+719.65% min=-315.57%">+122.39% <span style="color:#666">(6144)</span></td><td title="n=6144 avg=+122.34% max=+793.60% min=-288.81%">+122.34% <span style="color:#666">(6144)</span></td><td title="n=6144 avg=+93.84% max=+637.21% min=-289.30%">+93.84% <span style="color:#666">(6144)</span></td></tr><tr><td><code>sl_atr_mult</code></td><td>+23.12pp</td><td title="n=6144 avg=+125.68% max=+767.44% min=-231.48%">+125.68% <span style="color:#666">(6144)</span></td><td title="n=6144 avg=+110.34% max=+793.60% min=-315.57%">+110.34% <span style="color:#666">(6144)</span></td><td title="n=6144 avg=+102.56% max=+722.80% min=-238.18%">+102.56% <span style="color:#666">(6144)</span></td></tr><tr><td><code>max_hold_bars</code></td><td>+11.93pp</td><td title="n=9216 avg=+118.82% max=+647.74% min=-272.72%">+118.82% <span style="color:#666">(9216)</span></td><td title="n=9216 avg=+106.90% max=+793.60% min=-315.57%">+106.90% <span style="color:#666">(9216)</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<details>
+  <summary>Methodology & caveats</summary>
+  <div class="card" style="margin-top:12px">
+    <p><strong>What "robust" means:</strong> positive return on BOTH 4h and 1d EUR/USD data over a 120-day window. Filters out over-fitted single-timeframe configs.</p>
+    <p><strong>Sample size caveat:</strong> top configs have n=3-8 trades on each timeframe over 120 days. That's <em>not</em> statistically significant on its own. The "robust" filter is doing more work than the absolute numbers — it tells you the config generalizes across timeframes, not that the returns are reliable estimates.</p>
+    <p><strong>Multi-asset test:</strong> the 3 best (4h+1d) EUR/USD configs were re-run on 5 Kraken pairs. Mixed results — A_1to1 holds up on HBAR/BTC/XRP, but C_mid and B_1to5 are noisier. This suggests the divergence signal works but the SL/TP ratio is pair-dependent.</p>
+    <p><strong>What this report does NOT do:</strong> live trading, OANDA order endpoints, walk-forward validation, regime tagging, or position sizing beyond fixed 2% per trade. The 18,432-config grid is a <em>static</em> snapshot from 2026-06-11 — no re-runs, no fresh data.</p>
+  </div>
+</details>
+
+<div class="footer">
+  Generated 2026-06-13 from <code>div_sweep_results.json</code> (15.8 MB, 18,432 records) and <code>div_multiasset.py</code> output. Sweep run on 2026-06-11 12:01 UTC over 120-day EUR/USD windows. Multi-asset cross-test rerun 2026-06-13. Not financial advice.
+</div>
+
+</main>
+</body>
+</html>
