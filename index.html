@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Divergence-at-S/R — Sweep Report</title>
+<title>DCA Bot — Auto-Research Report</title>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif; background: #0b1220; color: #e6e9ef; }
@@ -21,32 +21,34 @@
   h2 { font-size: 16px; font-weight: 600; color: #c0c6d0; margin: 36px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #1e293b; }
   h3 { font-size: 13px; font-weight: 500; color: #94a3b8; margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 0.08em; }
   .card { background: #131a2a; border: 1px solid #1e293b; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; }
-  .config-code { background: #0b1220; border: 1px solid #1e293b; border-radius: 4px; padding: 10px 14px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: #c0c6d0; overflow-x: auto; white-space: nowrap; }
+  .bot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .bot-card { background: #131a2a; border: 1px solid #1e293b; border-radius: 8px; padding: 16px 20px; }
+  .bot-card h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: #e6e9ef; text-transform: none; letter-spacing: 0; display: flex; align-items: center; justify-content: space-between; }
+  .badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: #1e293b; color: #94a3b8; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+  .badge.green { background: #064e3b; color: #6ee7b7; }
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid #1e293b; font-feature-settings: "tnum"; }
+  th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #1e293b; font-feature-settings: "tnum"; }
   th { color: #94a3b8; font-weight: 500; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.06em; }
   td { color: #c0c6d0; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; }
   td.pos { color: #6ee7b7; }
   td.neg { color: #fca5a5; }
   td strong { color: #e6e9ef; font-weight: 600; }
   code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; color: #c0c6d0; background: transparent; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .grid-2 h3 { margin-top: 0; }
   .pareto-svg { background: #0b1220; border: 1px solid #1e293b; border-radius: 6px; width: 100%; height: auto; }
-  .scatter-dot { fill: #475569; opacity: 0.45; }
-  .pareto-poly { fill: none; stroke: #10b981; stroke-width: 2; stroke-linejoin: round; }
+  .pareto-poly { fill: none; stroke: #10b981; stroke-width: 2; stroke-linejoin: round; opacity: 0.5; }
   .axis-line { stroke: #1e293b; stroke-width: 1; }
   .axis-label { fill: #94a3b8; font-size: 10.5px; font-family: -apple-system, system-ui, sans-serif; }
+  .metrics-tbl { font-size: 11.5px; }
+  .metrics-tbl td { padding: 4px 8px; }
+  .metrics-tbl td:first-child { color: #94a3b8; }
   .footer { color: #475569; font-size: 11px; margin-top: 60px; padding-top: 16px; border-top: 1px solid #1e293b; }
-  .sensitivity td { font-size: 11px; }
-  .sensitivity td:first-child { color: #94a3b8; font-family: ui-monospace, monospace; }
-  .multi-table th { text-align: center; }
-  .multi-table td { text-align: center; }
-  .multi-table td:first-child { text-align: left; }
   details { margin-bottom: 12px; }
-  details summary { cursor: pointer; color: #94a3b8; padding: 8px 0; user-select: none; }
+  details summary { cursor: pointer; color: #94a3b8; padding: 8px 0; user-select: none; font-size: 13px; }
   details summary:hover { color: #c0c6d0; }
   details[open] summary { color: #6ee7b7; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11.5px; color: #94a3b8; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
 </style>
 </head>
 <body><div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#7c2d12,#dc2626);color:#fef2f2;padding:10px 16px;font:600 13px/1.4 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;text-align:center;border-bottom:2px solid #fbbf24">
@@ -55,1185 +57,1322 @@
   <a href="javascript:this.parentNode.style.display='none'" style="color:#fca5a5;margin-left:14px;cursor:pointer">× dismiss</a>
 </div>
 <header>
-  <h1><span>◐</span> Divergence-at-S/R — Sweep Report</h1>
-  <div class="sub">RSI + MACD divergence at pivot-derived support/resistance · EUR/USD grid (18,432 configs) + 5-asset cross test (15 configs) · 120-day windows · last run 2026-06-11 12:01 UTC · static snapshot</div>
+  <h1><span>◐</span> DCA Bot — Auto-Research Report</h1>
+  <div class="sub">Multi-pair DCA bot parameter optimizer · karpathy/autoresearch-style loop · 378 iterations across 5 bots · 1h candles · 5/5 bots promoted · <strong>data as of 2026-06-29T20:36:04 UTC</strong> · <strong>baseline config from 2026-06-13 17:59:03 +0000 UTC</strong></div>
+  <div class='sub'>Loop ran <strong>2026-06-29T20:36:00</strong> → <strong>2026-06-29T20:36:04</strong> UTC (4.0s wall-clock for 378 iterations)</div>
 </header>
 <main>
 
 <div class="hero">
   <div class="stat">
-    <div class="label">Total configs</div>
-    <div class="value">18,432</div>
+    <div class="label">Total iterations</div>
+    <div class="value">378</div>
   </div>
   <div class="stat">
-    <div class="label">Robust (both TFs)</div>
-    <div class="value green">5,915</div>
+    <div class="label">Configs kept</div>
+    <div class="value green">44</div>
   </div>
   <div class="stat">
-    <div class="label">Robust rate</div>
-    <div class="value">32.1%</div>
+    <div class="label">Bots optimized</div>
+    <div class="value amber">5</div>
   </div>
   <div class="stat">
     <div class="label">Pareto points</div>
-    <div class="value amber">54</div>
+    <div class="value">25</div>
   </div>
 </div>
 
+<h2>Baseline vs current vs research best</h2>
 <div class="card">
-  <h3 style="margin-top:0">🥇 Top config</h3>
-  <div class="config-code">RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=5.0x hold=30b</div>
-  <div class="grid-2" style="margin-top: 16px">
-    <div>
-      <h3 style="margin-top:0">4h results</h3>
-      <table>
-        <tr><td>Return</td><td class="pos"><strong>+301.63%</strong></td></tr>
-        <tr><td>Trades</td><td>5</td></tr>
-        <tr><td>Win rate</td><td>100%</td></tr>
-        <tr><td>Profit factor</td><td>∞</td></tr>
-        <tr><td>Max drawdown</td><td>0.00%</td></tr>
-        <tr><td>Expectancy (R)</td><td>+0.00</td></tr>
-      </table>
-    </div>
-    <div>
-      <h3 style="margin-top:0">1d results</h3>
-      <table>
-        <tr><td>Return</td><td class="pos"><strong>+491.97%</strong></td></tr>
-        <tr><td>Trades</td><td>3</td></tr>
-        <tr><td>Win rate</td><td>67%</td></tr>
-        <tr><td>Profit factor</td><td>4.10</td></tr>
-        <tr><td>Max drawdown</td><td>153.63%</td></tr>
-        <tr><td>Expectancy (R)</td><td>+0.82</td></tr>
-      </table>
-    </div>
-  </div>
+  
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">Bot</th>
+      <th colspan="3" style="text-align:center;border-left:1px solid #1e293b">Baseline (from 2026-06-13 17:59:03 +0000)</th>
+      <th colspan="3" style="text-align:center;border-left:1px solid #1e293b">Current bots.json</th>
+      <th colspan="2" style="text-align:center;border-left:1px solid #1e293b">Research best</th>
+      <th rowspan="2">Promoted</th>
+      <th rowspan="2">Status</th>
+    </tr>
+    <tr>
+      <th style="border-left:1px solid #1e293b">Score</th><th>Ret</th><th>DD</th>
+      <th style="border-left:1px solid #1e293b">Score</th><th>Ret</th><th>DD</th>
+      <th style="border-left:1px solid #1e293b">Score</th><th>Ret</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<div class="sub" style="margin-top:6px">"Score" is the user's stated objective: short-duration profitable deals with low drawdown. Δ shows change from baseline. "Research better" means the loop found a config strictly better than what's currently in bots.json — review the per-bot cards below before applying.</div>
+
 </div>
 
-<h2>Pareto frontier — 1d (return vs max DD)</h2>
+<h2>Best config per bot</h2>
+<div class="bot-grid">
+  
+<div class="bot-card">
+  <h3>hbar_accumulator <span class="badge green">PROMOTED</span></h3>
+  <div class="sub" style="margin-bottom:8px;font-size:11px">⏱ first seen <strong>2026-06-29T20:36:00</strong> · last seen <strong>2026-06-29T20:36:04</strong> · <strong>15</strong> keep iterations, last at <strong>2026-06-29T20:36:03</strong> · promoted at <strong>2026-06-29 20:47:48 +0000</strong> in commit <code>338e7bb</code></div>
+  <table class="metrics-tbl">
+    <tr><td>Score</td><td><strong>6.47</strong></td></tr>
+    <tr><td>Return</td><td class="pos">+1.18%</td></tr>
+    <tr><td>Win rate</td><td>33.3%</td></tr>
+    <tr><td>Deals</td><td>46</td></tr>
+    <tr><td>Avg duration</td><td>14.6h</td></tr>
+    <tr><td>Max DD</td><td>1.4%</td></tr>
+    <tr><td>Sharpe</td><td>0.41</td></tr>
+  </table>
+  <details style="margin-top:8px">
+    <summary>Config (changes vs baseline highlighted)</summary>
+    <table class="metrics-tbl" style="margin-top:8px">
+      <tr><td><code>base_order_quote</code></td><td class='pos'><strong>40</strong> <span class="sub" style="font-size:10px">(was 50)</span></td></tr><tr><td><code>safety_order_quote</code></td><td class='pos'><strong>100</strong> <span class="sub" style="font-size:10px">(was 30)</span></td></tr><tr><td><code>max_safety_orders</code></td><td class='pos'><strong>6</strong> <span class="sub" style="font-size:10px">(was 7)</span></td></tr><tr><td><code>safety_step_pct</code></td><td class=''><strong>5</strong></td></tr><tr><td><code>martingale_volume</code></td><td class='pos'><strong>1.6</strong> <span class="sub" style="font-size:10px">(was 1.5)</span></td></tr><tr><td><code>martingale_step</code></td><td class='pos'><strong>1.05</strong> <span class="sub" style="font-size:10px">(was 1.2)</span></td></tr><tr><td><code>take_profit_pct</code></td><td class='pos'><strong>3</strong> <span class="sub" style="font-size:10px">(was 2.5)</span></td></tr>
+    </table>
+    
+  </details>
+</div>
+<div class="bot-card">
+  <h3>hbar_scalper_tight <span class="badge green">PROMOTED</span></h3>
+  <div class="sub" style="margin-bottom:8px;font-size:11px">⏱ first seen <strong>2026-06-29T20:36:00</strong> · last seen <strong>2026-06-29T20:36:04</strong> · <strong>8</strong> keep iterations, last at <strong>2026-06-29T20:36:03</strong> · promoted at <strong>2026-06-29 20:47:48 +0000</strong> in commit <code>338e7bb</code></div>
+  <table class="metrics-tbl">
+    <tr><td>Score</td><td><strong>5.46</strong></td></tr>
+    <tr><td>Return</td><td class="neg">-0.02%</td></tr>
+    <tr><td>Win rate</td><td>100.0%</td></tr>
+    <tr><td>Deals</td><td>154</td></tr>
+    <tr><td>Avg duration</td><td>3.7h</td></tr>
+    <tr><td>Max DD</td><td>2.2%</td></tr>
+    <tr><td>Sharpe</td><td>0.62</td></tr>
+  </table>
+  <details style="margin-top:8px">
+    <summary>Config (changes vs baseline highlighted)</summary>
+    <table class="metrics-tbl" style="margin-top:8px">
+      <tr><td><code>base_order_quote</code></td><td class='pos'><strong>24</strong> <span class="sub" style="font-size:10px">(was 30)</span></td></tr><tr><td><code>safety_order_quote</code></td><td class=''><strong>45</strong></td></tr><tr><td><code>max_safety_orders</code></td><td class='pos'><strong>8</strong> <span class="sub" style="font-size:10px">(was 6)</span></td></tr><tr><td><code>safety_step_pct</code></td><td class='pos'><strong>2.5</strong> <span class="sub" style="font-size:10px">(was 3)</span></td></tr><tr><td><code>martingale_volume</code></td><td class='pos'><strong>1.6</strong> <span class="sub" style="font-size:10px">(was 1.5)</span></td></tr><tr><td><code>martingale_step</code></td><td class='pos'><strong>1.05</strong> <span class="sub" style="font-size:10px">(was 1)</span></td></tr><tr><td><code>take_profit_pct</code></td><td class='pos'><strong>0.5</strong> <span class="sub" style="font-size:10px">(was 1)</span></td></tr>
+    </table>
+    
+  </details>
+</div>
+<div class="bot-card">
+  <h3>btc_long_demo <span class="badge green">PROMOTED</span></h3>
+  <div class="sub" style="margin-bottom:8px;font-size:11px">⏱ first seen <strong>2026-06-29T20:36:00</strong> · last seen <strong>2026-06-29T20:36:04</strong> · <strong>15</strong> keep iterations, last at <strong>2026-06-29T20:36:03</strong> · promoted at <strong>2026-06-29 20:47:48 +0000</strong> in commit <code>338e7bb</code></div>
+  <table class="metrics-tbl">
+    <tr><td>Score</td><td><strong>4.61</strong></td></tr>
+    <tr><td>Return</td><td class="pos">+0.14%</td></tr>
+    <tr><td>Win rate</td><td>58.3%</td></tr>
+    <tr><td>Deals</td><td>48</td></tr>
+    <tr><td>Avg duration</td><td>14.0h</td></tr>
+    <tr><td>Max DD</td><td>2.6%</td></tr>
+    <tr><td>Sharpe</td><td>0.16</td></tr>
+  </table>
+  <details style="margin-top:8px">
+    <summary>Config (changes vs baseline highlighted)</summary>
+    <table class="metrics-tbl" style="margin-top:8px">
+      <tr><td><code>base_order_quote</code></td><td class='pos'><strong>51.2</strong> <span class="sub" style="font-size:10px">(was 100)</span></td></tr><tr><td><code>safety_order_quote</code></td><td class='pos'><strong>13.1072</strong> <span class="sub" style="font-size:10px">(was 50)</span></td></tr><tr><td><code>max_safety_orders</code></td><td class=''><strong>5</strong></td></tr><tr><td><code>safety_step_pct</code></td><td class=''><strong>1.5</strong></td></tr><tr><td><code>martingale_volume</code></td><td class='pos'><strong>2</strong> <span class="sub" style="font-size:10px">(was 1.5)</span></td></tr><tr><td><code>martingale_step</code></td><td class='pos'><strong>1.35</strong> <span class="sub" style="font-size:10px">(was 1.2)</span></td></tr><tr><td><code>take_profit_pct</code></td><td class=''><strong>2</strong></td></tr>
+    </table>
+    
+  </details>
+</div>
+<div class="bot-card">
+  <h3>hbar_scalper_v1 <span class="badge green">PROMOTED</span></h3>
+  <div class="sub" style="margin-bottom:8px;font-size:11px">⏱ first seen <strong>2026-06-29T20:36:00</strong> · last seen <strong>2026-06-29T20:36:04</strong> · <strong>6</strong> keep iterations, last at <strong>2026-06-29T20:36:03</strong> · promoted at <strong>2026-06-29 20:47:48 +0000</strong> in commit <code>338e7bb</code></div>
+  <table class="metrics-tbl">
+    <tr><td>Score</td><td><strong>4.50</strong></td></tr>
+    <tr><td>Return</td><td class="pos">+0.25%</td></tr>
+    <tr><td>Win rate</td><td>76.4%</td></tr>
+    <tr><td>Deals</td><td>72</td></tr>
+    <tr><td>Avg duration</td><td>9.0h</td></tr>
+    <tr><td>Max DD</td><td>4.6%</td></tr>
+    <tr><td>Sharpe</td><td>0.32</td></tr>
+  </table>
+  <details style="margin-top:8px">
+    <summary>Config (changes vs baseline highlighted)</summary>
+    <table class="metrics-tbl" style="margin-top:8px">
+      <tr><td><code>base_order_quote</code></td><td class='pos'><strong>24</strong> <span class="sub" style="font-size:10px">(was 30)</span></td></tr><tr><td><code>safety_order_quote</code></td><td class='pos'><strong>28.8</strong> <span class="sub" style="font-size:10px">(was 45)</span></td></tr><tr><td><code>max_safety_orders</code></td><td class='pos'><strong>7</strong> <span class="sub" style="font-size:10px">(was 6)</span></td></tr><tr><td><code>safety_step_pct</code></td><td class=''><strong>2</strong></td></tr><tr><td><code>martingale_volume</code></td><td class='pos'><strong>1.4</strong> <span class="sub" style="font-size:10px">(was 1.5)</span></td></tr><tr><td><code>martingale_step</code></td><td class='pos'><strong>1.05</strong> <span class="sub" style="font-size:10px">(was 1)</span></td></tr><tr><td><code>take_profit_pct</code></td><td class=''><strong>1.5</strong></td></tr>
+    </table>
+    
+  </details>
+</div>
+<div class="bot-card">
+  <h3>hbar_dca_safe <span class="badge green">PROMOTED</span></h3>
+  <div class="sub" style="margin-bottom:8px;font-size:11px">⏱ first seen <strong>2026-06-29T20:36:00</strong> · last seen <strong>2026-06-29T20:36:04</strong></div>
+  <table class="metrics-tbl">
+    <tr><td>Score</td><td><strong>0.82</strong></td></tr>
+    <tr><td>Return</td><td class="neg">-3.11%</td></tr>
+    <tr><td>Win rate</td><td>19.4%</td></tr>
+    <tr><td>Deals</td><td>32</td></tr>
+    <tr><td>Avg duration</td><td>21.5h</td></tr>
+    <tr><td>Max DD</td><td>2.2%</td></tr>
+    <tr><td>Sharpe</td><td>-0.20</td></tr>
+  </table>
+  <details style="margin-top:8px">
+    <summary>Config (changes vs baseline highlighted)</summary>
+    <table class="metrics-tbl" style="margin-top:8px">
+      <tr><td><code>base_order_quote</code></td><td class=''><strong>25</strong></td></tr><tr><td><code>safety_order_quote</code></td><td class='pos'><strong>18.75</strong> <span class="sub" style="font-size:10px">(was 15)</span></td></tr><tr><td><code>max_safety_orders</code></td><td class=''><strong>7</strong></td></tr><tr><td><code>safety_step_pct</code></td><td class=''><strong>5</strong></td></tr><tr><td><code>martingale_volume</code></td><td class=''><strong>1.5</strong></td></tr><tr><td><code>martingale_step</code></td><td class=''><strong>1.2</strong></td></tr><tr><td><code>take_profit_pct</code></td><td class=''><strong>5</strong></td></tr>
+    </table>
+    <div class="sub" style="margin-top:6px;color:#fbbf24">⚠ Live config in bots.json differs from research best on: safety_order_quote</div>
+  </details>
+</div>
+</div>
+
+<h2>Score progression across iterations (best-so-far)</h2>
 <div class="card">
-<svg class="pareto-svg" viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet">
-  <line class="axis-line" x1="40" y1="260" x2="700" y2="260"></line>
-  <line class="axis-line" x1="40" y1="20" x2="40" y2="260"></line>
-  <circle class="scatter-dot" cx="605.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="562.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="442.0" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="530.6" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="512.8" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="442.0" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="476.4" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="530.6" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="530.6" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="571.8" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="508.7" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="501.5" cy="181.4" r="1.5"></circle><circle class="scatter-dot" cx="515.4" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="530.6" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="541.5" cy="204.1" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="442.0" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="439.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="463.0" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="491.0" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="464.5" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="489.8" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="476.4" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="537.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="403.2" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="471.5" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="405.2" cy="170.9" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="488.3" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="368.9" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="444.0" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="391.1" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="471.3" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="515.4" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="476.4" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="351.2" cy="158.8" r="1.5"></circle><circle class="scatter-dot" cx="471.3" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="395.7" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="439.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="471.3" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="513.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="495.1" cy="229.6" r="1.5"></circle><circle class="scatter-dot" cx="513.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="412.0" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="451.7" cy="224.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="412.9" cy="133.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="391.1" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="429.5" cy="204.1" r="1.5"></circle><circle class="scatter-dot" cx="330.6" cy="211.1" r="1.5"></circle><circle class="scatter-dot" cx="382.7" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="423.9" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="403.5" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="439.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="435.3" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="395.7" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="403.5" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="365.9" cy="165.2" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="434.4" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="425.0" cy="143.3" r="1.5"></circle><circle class="scatter-dot" cx="399.1" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="416.1" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="400.6" cy="222.9" r="1.5"></circle><circle class="scatter-dot" cx="436.2" cy="178.5" r="1.5"></circle><circle class="scatter-dot" cx="439.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="376.3" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="395.7" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="450.6" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="425.0" cy="143.3" r="1.5"></circle><circle class="scatter-dot" cx="456.4" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="417.0" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="398.7" cy="209.4" r="1.5"></circle><circle class="scatter-dot" cx="390.3" cy="181.4" r="1.5"></circle><circle class="scatter-dot" cx="397.8" cy="197.1" r="1.5"></circle><circle class="scatter-dot" cx="456.4" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="326.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="326.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="468.8" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="370.9" cy="198.1" r="1.5"></circle><circle class="scatter-dot" cx="429.2" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="417.0" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="370.1" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="312.4" cy="136.4" r="1.5"></circle><circle class="scatter-dot" cx="442.6" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="362.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="420.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="369.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="416.1" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="371.7" cy="143.3" r="1.5"></circle><circle class="scatter-dot" cx="358.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="416.1" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="457.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="378.5" cy="224.0" r="1.5"></circle><circle class="scatter-dot" cx="339.2" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="429.2" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="295.8" cy="86.3" r="1.5"></circle><circle class="scatter-dot" cx="425.3" cy="174.0" r="1.5"></circle><circle class="scatter-dot" cx="382.2" cy="181.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="322.7" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="352.2" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="412.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="412.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="379.3" cy="178.5" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="385.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="412.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="347.0" cy="133.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="429.2" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="385.4" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="327.7" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="315.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="335.9" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="348.2" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="407.3" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="351.2" cy="158.8" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="359.2" cy="204.1" r="1.5"></circle><circle class="scatter-dot" cx="318.4" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="312.7" cy="136.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="416.1" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="372.1" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="315.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="358.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="369.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="369.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="239.5" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="325.9" cy="198.6" r="1.5"></circle><circle class="scatter-dot" cx="326.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="358.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="348.2" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="317.9" cy="99.0" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="315.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="369.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="337.1" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="369.3" cy="174.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="358.8" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="348.2" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="290.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="282.6" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="318.5" cy="143.3" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="329.6" cy="200.7" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="274.3" cy="216.3" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="231.7" cy="190.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="224.6" cy="108.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="309.2" cy="200.7" r="1.5"></circle><circle class="scatter-dot" cx="342.5" cy="174.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="219.5" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="296.7" cy="181.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="349.3" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="231.7" cy="190.9" r="1.5"></circle><circle class="scatter-dot" cx="277.2" cy="176.3" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="262.4" cy="173.1" r="1.5"></circle><circle class="scatter-dot" cx="219.5" cy="147.8" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="309.2" cy="200.7" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="258.1" cy="108.4" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="245.2" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="304.7" cy="136.6" r="1.5"></circle><circle class="scatter-dot" cx="290.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="315.5" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="337.1" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="330.9" cy="250.0" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="266.5" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="335.3" cy="204.1" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="290.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="290.9" cy="226.1" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="231.1" cy="190.5" r="1.5"></circle><circle class="scatter-dot" cx="203.3" cy="138.3" r="1.5"></circle><circle class="scatter-dot" cx="266.5" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="287.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="271.0" cy="214.3" r="1.5"></circle><circle class="scatter-dot" cx="271.4" cy="178.5" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="291.7" cy="226.6" r="1.5"></circle><circle class="scatter-dot" cx="231.7" cy="190.9" r="1.5"></circle><circle class="scatter-dot" cx="306.1" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="272.2" cy="215.0" r="1.5"></circle><circle class="scatter-dot" cx="287.9" cy="224.4" r="1.5"></circle><circle class="scatter-dot" cx="274.3" cy="216.3" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="252.7" cy="203.4" r="1.5"></circle><circle class="scatter-dot" cx="266.5" cy="211.6" r="1.5"></circle><circle class="scatter-dot" cx="161.7" cy="108.4" r="1.5"></circle><circle class="scatter-dot" cx="243.8" cy="136.6" r="1.5"></circle><circle class="scatter-dot" cx="274.3" cy="216.3" r="1.5"></circle><circle class="scatter-dot" cx="251.1" cy="202.4" r="1.5"></circle><circle class="scatter-dot" cx="226.7" cy="152.1" r="1.5"></circle><circle class="scatter-dot" cx="253.0" cy="203.6" r="1.5"></circle><circle class="scatter-dot" cx="245.2" cy="198.9" r="1.5"></circle><circle class="scatter-dot" cx="258.3" cy="158.8" r="1.5"></circle><circle class="scatter-dot" cx="253.0" cy="203.6" r="1.5"></circle><circle class="scatter-dot" cx="193.9" cy="168.4" r="1.5"></circle><circle class="scatter-dot" cx="274.3" cy="216.3" r="1.5"></circle><circle class="scatter-dot" cx="152.6" cy="108.4" r="1.5"></circle><circle class="scatter-dot" cx="202.5" cy="173.4" r="1.5"></circle><circle class="scatter-dot" cx="130.2" cy="130.4" r="1.5"></circle><circle class="scatter-dot" cx="80.2" cy="100.6" r="1.5"></circle>
-  <polyline class="pareto-poly" points="562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 562.9,250.0 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 577.3,224.4 650.9,224.4 650.9,224.4 650.9,224.4 650.9,224.4 650.9,224.4 650.9,224.4"></polyline>
-  <circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="562.9" cy="250.0" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+415.90% dd=0.00%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="577.3" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+441.62% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle><circle cx="650.9" cy="224.4" r="3" fill="#10b981" stroke="#0b1220" stroke-width="1"><title>ret=+573.58% dd=77.05%</title></circle>
-  <text class="axis-label" x="370" y="290" text-anchor="middle">1d return (%)</text>
-  <text class="axis-label" x="10" y="140" text-anchor="middle" transform="rotate(-90 10 140)">1d max drawdown (%)</text>
+  
+<svg class="pareto-svg" viewBox="0 0 720 240" preserveAspectRatio="xMidYMid meet">
+  <line class="axis-line" x1="40" y1="200" x2="680" y2="200"></line>
+  <line class="axis-line" x1="40" y1="40" x2="40" y2="200"></line>
+  <polyline points="40.0,176.7 48.2,176.0 56.4,176.0 64.6,155.0 72.8,147.1 81.0,147.1 89.2,118.0 97.4,118.0 105.6,118.0 113.8,118.0 122.1,118.0 130.3,115.4 138.5,115.4 146.7,115.4 154.9,115.4 163.1,115.4 171.3,115.4 179.5,115.4 187.7,114.3 195.9,113.5 204.1,113.5 212.3,113.5 220.5,113.5 228.7,113.5 236.9,113.5 245.1,113.5 253.3,113.5 261.5,110.6 269.7,110.6 277.9,110.6 286.2,110.6 294.4,110.6 302.6,110.6 310.8,110.6 319.0,110.6 327.2,110.6 335.4,110.6 343.6,110.6 351.8,110.6 360.0,110.6 368.2,110.6 376.4,110.6 384.6,110.6 392.8,110.6 401.0,110.6 409.2,110.6 417.4,110.6 425.6,110.6 433.8,110.6 442.1,110.6 450.3,110.6 458.5,110.6 466.7,110.6 474.9,110.6 483.1,110.6 491.3,109.4 499.5,109.4 507.7,109.4 515.9,109.4 524.1,109.4 532.3,109.4 540.5,109.4 548.7,108.2 556.9,108.2 565.1,108.2 573.3,108.2 581.5,104.7 589.7,101.3 597.9,80.2 606.2,80.2 614.4,80.2 622.6,80.2 630.8,77.7 639.0,77.7 647.2,77.7 655.4,77.7" stroke="#6ee7b7" stroke-width="2" fill="none" opacity="0.85"/><polyline points="40.0,175.1 48.2,175.1 56.4,175.1 64.6,175.1 72.8,171.8 81.0,138.1 89.2,97.2 97.4,88.3 105.6,88.3 113.8,79.6 122.1,79.6 130.3,79.6 138.5,79.6 146.7,79.6 154.9,76.1 163.1,76.1 171.3,76.1 179.5,68.5 187.7,68.5 195.9,68.5 204.1,68.5 212.3,67.7 220.5,67.7 228.7,66.5 236.9,66.5 245.1,66.5 253.3,66.5 261.5,66.5 269.7,66.5 277.9,61.7 286.2,61.7 294.4,61.7 302.6,61.7 310.8,61.7 319.0,61.7 327.2,58.1 335.4,58.1 343.6,58.1 351.8,58.1 360.0,58.1 368.2,58.1 376.4,58.1 384.6,58.1 392.8,58.1 401.0,58.1 409.2,57.3 417.4,57.3 425.6,57.3 433.8,57.3 442.1,57.3 450.3,56.4 458.5,56.4 466.7,56.4 474.9,56.4 483.1,56.4 491.3,56.4 499.5,56.4 507.7,56.4 515.9,56.4 524.1,56.4 532.3,56.4 540.5,56.4 548.7,56.4 556.9,56.4 565.1,56.4 573.3,56.4 581.5,56.4 589.7,56.4 597.9,56.4 606.2,56.4 614.4,56.4 622.6,56.4 630.8,53.3 639.0,53.3 647.2,53.3 655.4,53.3 663.6,53.3 671.8,53.3" stroke="#fbbf24" stroke-width="2" fill="none" opacity="0.85"/><polyline points="40.0,186.7 48.2,186.7 56.4,171.7 64.6,171.7 72.8,127.4 81.0,127.4 89.2,127.4 97.4,127.4 105.6,127.4 113.8,127.4 122.1,127.4 130.3,127.4 138.5,127.4 146.7,127.4 154.9,127.4 163.1,127.4 171.3,127.4 179.5,127.4 187.7,127.4 195.9,127.4 204.1,127.4 212.3,127.4 220.5,127.4 228.7,127.4 236.9,127.4 245.1,127.4 253.3,127.4 261.5,127.4 269.7,127.4 277.9,127.4 286.2,127.4 294.4,127.4 302.6,127.4 310.8,127.4 319.0,127.4 327.2,127.4 335.4,127.4 343.6,127.4 351.8,127.4 360.0,127.4 368.2,127.4 376.4,127.4 384.6,127.4 392.8,127.4 401.0,127.4 409.2,127.4 417.4,127.4 425.6,127.4 433.8,127.4 442.1,127.4 450.3,127.4 458.5,127.4 466.7,127.4 474.9,127.4 483.1,127.4 491.3,127.4 499.5,127.4 507.7,127.4 515.9,127.4 524.1,127.4 532.3,127.4 540.5,127.4 548.7,127.4 556.9,127.4 565.1,127.4 573.3,127.4 581.5,127.4 589.7,127.4 597.9,127.4 606.2,127.4 614.4,127.4 622.6,127.4 630.8,127.4 639.0,127.4 647.2,127.4" stroke="#fca5a5" stroke-width="2" fill="none" opacity="0.85"/><polyline points="40.0,110.4 48.2,91.9 56.4,91.9 64.6,91.9 72.8,91.9 81.0,91.9 89.2,91.9 97.4,86.2 105.6,86.2 113.8,86.2 122.1,86.2 130.3,74.9 138.5,70.2 146.7,70.2 154.9,70.2 163.1,70.2 171.3,70.2 179.5,70.2 187.7,67.8 195.9,67.8 204.1,67.8 212.3,67.8 220.5,67.8 228.7,67.8 236.9,67.8 245.1,67.8 253.3,67.8 261.5,67.8 269.7,67.8 277.9,67.8 286.2,67.8 294.4,67.8 302.6,67.8 310.8,67.8 319.0,67.8 327.2,67.8 335.4,67.4 343.6,67.4 351.8,67.4 360.0,67.4 368.2,67.4 376.4,67.4 384.6,67.4 392.8,67.4 401.0,67.4 409.2,67.4 417.4,66.6 425.6,66.6 433.8,66.6 442.1,66.6 450.3,66.6 458.5,66.6 466.7,66.6 474.9,66.6 483.1,66.6 491.3,66.6 499.5,66.6 507.7,66.6 515.9,66.6 524.1,66.6 532.3,66.6 540.5,66.6 548.7,66.6 556.9,66.6 565.1,66.6 573.3,66.6 581.5,66.6 589.7,66.6 597.9,66.6 606.2,66.6 614.4,66.6 622.6,66.6 630.8,66.6 639.0,66.6" stroke="#93c5fd" stroke-width="2" fill="none" opacity="0.85"/><polyline points="40.0,144.9 48.2,144.9 56.4,104.2 64.6,104.2 72.8,104.2 81.0,87.4 89.2,87.4 97.4,87.4 105.6,87.4 113.8,87.4 122.1,87.4 130.3,87.4 138.5,87.4 146.7,87.4 154.9,87.4 163.1,87.4 171.3,87.4 179.5,87.4 187.7,87.4 195.9,87.4 204.1,87.4 212.3,87.4 220.5,87.4 228.7,87.4 236.9,87.4 245.1,87.4 253.3,87.4 261.5,87.4 269.7,87.4 277.9,87.4 286.2,87.4 294.4,87.4 302.6,87.4 310.8,87.4 319.0,87.4 327.2,87.4 335.4,87.4 343.6,87.4 351.8,87.4 360.0,87.4 368.2,87.4 376.4,83.9 384.6,83.9 392.8,83.9 401.0,83.9 409.2,83.9 417.4,83.9 425.6,83.9 433.8,83.9 442.1,83.9 450.3,83.9 458.5,83.9 466.7,83.9 474.9,83.9 483.1,83.9 491.3,83.9 499.5,83.9 507.7,83.9 515.9,83.9 524.1,83.9 532.3,83.9 540.5,83.9 548.7,83.9 556.9,83.9 565.1,83.9 573.3,83.9 581.5,83.9 589.7,82.3 597.9,82.3 606.2,82.3 614.4,82.3 622.6,82.3 630.8,79.2 639.0,79.2 647.2,79.2" stroke="#c4b5fd" stroke-width="2" fill="none" opacity="0.85"/>
+  <text class="axis-label" x="360" y="235" text-anchor="middle">iteration</text>
+  <text class="axis-label" x="12" y="120" text-anchor="middle" transform="rotate(-90 12 120)">best-so-far score</text>
 </svg>
-<div class="sub" style="margin-top:8px">Gray dots: subsample of all 18,432 configs. Green line + dots: Pareto frontier (no other config has higher return at lower or equal DD). 54 nondominated points in 1d return/DD space.</div>
+<div class="legend" style="margin-top:8px"><span class="legend-item"><span class="legend-swatch" style="background:#6ee7b7"></span>btc_long_demo</span><span class="legend-item"><span class="legend-swatch" style="background:#fbbf24"></span>hbar_accumulator</span><span class="legend-item"><span class="legend-swatch" style="background:#fca5a5"></span>hbar_dca_safe</span><span class="legend-item"><span class="legend-swatch" style="background:#93c5fd"></span>hbar_scalper_tight</span><span class="legend-item"><span class="legend-swatch" style="background:#c4b5fd"></span>hbar_scalper_v1</span></div>
+
 </div>
 
-<h2>Top 25 by sum_return (4h + 1d)</h2>
+<h2>Pareto frontier — duration vs drawdown</h2>
 <div class="card">
-<table id="top25">
-  <thead>
-    <tr>
-      <th>#</th><th>Config</th>
-      <th>4h ret</th><th>4h n</th><th>4h WR</th><th>4h DD</th><th>4h PF</th>
-      <th>1d ret</th><th>1d n</th><th>1d WR</th><th>1d DD</th><th>1d PF</th>
-      <th>Sum</th>
-    </tr>
-  </thead>
-  <tbody>
-    
-        <tr>
-          <td>1</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+301.63%</td>
-          <td>5</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>153.6%</td>
-          <td>4.10</td>
-          <td><strong>+793.60%</strong></td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+234.66%</td>
-          <td>5</td>
-          <td>80%</td>
-          <td>26.5%</td>
-          <td>9.72</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>115.3%</td>
-          <td>5.47</td>
-          <td><strong>+767.44%</strong></td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+149.22%</td>
-          <td>6</td>
-          <td>50%</td>
-          <td>59.1%</td>
-          <td>3.00</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>77.0%</td>
-          <td>8.21</td>
-          <td><strong>+722.80%</strong></td>
-        </tr>
-        <tr>
-          <td>4</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+227.68%</td>
-          <td>7</td>
-          <td>71%</td>
-          <td>44.0%</td>
-          <td>4.34</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>153.6%</td>
-          <td>4.10</td>
-          <td><strong>+719.65%</strong></td>
-        </tr>
-        <tr>
-          <td>5</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+183.11%</td>
-          <td>7</td>
-          <td>57%</td>
-          <td>59.5%</td>
-          <td>3.35</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>115.3%</td>
-          <td>5.47</td>
-          <td><strong>+715.89%</strong></td>
-        </tr>
-        <tr>
-          <td>6</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+198.41%</td>
-          <td>6</td>
-          <td>83%</td>
-          <td>72.1%</td>
-          <td>3.75</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>153.6%</td>
-          <td>4.10</td>
-          <td><strong>+690.38%</strong></td>
-        </tr>
-        <tr>
-          <td>7</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+115.74%</td>
-          <td>7</td>
-          <td>43%</td>
-          <td>55.8%</td>
-          <td>2.08</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>77.0%</td>
-          <td>8.21</td>
-          <td><strong>+689.32%</strong></td>
-        </tr>
-        <tr>
-          <td>8</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+114.83%</td>
-          <td>8</td>
-          <td>38%</td>
-          <td>81.2%</td>
-          <td>2.06</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>77.0%</td>
-          <td>8.21</td>
-          <td><strong>+688.42%</strong></td>
-        </tr>
-        <tr>
-          <td>9</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
-          <td class="pos">+272.28%</td>
-          <td>8</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+688.17%</strong></td>
-        </tr>
-        <tr>
-          <td>10</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+272.28%</td>
-          <td>8</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+688.17%</strong></td>
-        </tr>
-        <tr>
-          <td>11</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+150.39%</td>
-          <td>6</td>
-          <td>67%</td>
-          <td>54.1%</td>
-          <td>2.86</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>115.3%</td>
-          <td>5.47</td>
-          <td><strong>+683.17%</strong></td>
-        </tr>
-        <tr>
-          <td>12</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+103.93%</td>
-          <td>8</td>
-          <td>38%</td>
-          <td>55.8%</td>
-          <td>1.87</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>77.0%</td>
-          <td>8.21</td>
-          <td><strong>+677.52%</strong></td>
-        </tr>
-        <tr>
-          <td>13</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+260.70%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>54.1%</td>
-          <td>5.81</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+676.60%</strong></td>
-        </tr>
-        <tr>
-          <td>14</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+260.70%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>54.1%</td>
-          <td>5.81</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+676.60%</strong></td>
-        </tr>
-        <tr>
-          <td>15</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+132.84%</td>
-          <td>7</td>
-          <td>57%</td>
-          <td>54.1%</td>
-          <td>2.35</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>115.3%</td>
-          <td>5.47</td>
-          <td><strong>+665.62%</strong></td>
-        </tr>
-        <tr>
-          <td>16</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+170.00%</td>
-          <td>7</td>
-          <td>71%</td>
-          <td>72.1%</td>
-          <td>2.78</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>153.6%</td>
-          <td>4.10</td>
-          <td><strong>+661.97%</strong></td>
-        </tr>
-        <tr>
-          <td>17</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
-          <td class="pos">+242.23%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>72.1%</td>
-          <td>4.36</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+658.13%</strong></td>
-        </tr>
-        <tr>
-          <td>18</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
-          <td class="pos">+242.23%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>72.1%</td>
-          <td>4.36</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+658.13%</strong></td>
-        </tr>
-        <tr>
-          <td>19</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=4.0x hold=30b</code></td>
-          <td class="pos">+294.58%</td>
-          <td>5</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td class="pos">+361.03%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>153.6%</td>
-          <td>3.29</td>
-          <td><strong>+655.61%</strong></td>
-        </tr>
-        <tr>
-          <td>20</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+81.47%</td>
-          <td>9</td>
-          <td>33%</td>
-          <td>77.9%</td>
-          <td>1.58</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>77.0%</td>
-          <td>8.21</td>
-          <td><strong>+655.05%</strong></td>
-        </tr>
-        <tr>
-          <td>21</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+81.47%</td>
-          <td>9</td>
-          <td>33%</td>
-          <td>77.9%</td>
-          <td>1.58</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>77.0%</td>
-          <td>8.21</td>
-          <td><strong>+655.05%</strong></td>
-        </tr>
-        <tr>
-          <td>22</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
-          <td class="pos">+231.84%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>54.1%</td>
-          <td>5.28</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+647.74%</strong></td>
-        </tr>
-        <tr>
-          <td>23</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
-          <td class="pos">+231.84%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>54.1%</td>
-          <td>5.28</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+647.74%</strong></td>
-        </tr>
-        <tr>
-          <td>24</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
-          <td class="pos">+227.94%</td>
-          <td>8</td>
-          <td>88%</td>
-          <td>11.7%</td>
-          <td>20.43</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+643.84%</strong></td>
-        </tr>
-        <tr>
-          <td>25</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=2.0x hold=20b</code></td>
-          <td class="pos">+227.94%</td>
-          <td>8</td>
-          <td>88%</td>
-          <td>11.7%</td>
-          <td>20.43</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>0.0%</td>
-          <td>∞</td>
-          <td><strong>+643.84%</strong></td>
-        </tr>
-  </tbody>
-</table>
+  
+<svg class="pareto-svg" viewBox="0 0 720 320" preserveAspectRatio="xMidYMid meet">
+  <line class="axis-line" x1="40" y1="280" x2="680" y2="280"></line>
+  <line class="axis-line" x1="40" y1="40" x2="40" y2="280"></line>
+  <polyline class="pareto-poly" points="643.4,258.6 618.9,255.9 498.0,254.4 468.7,253.9 495.5,249.4 495.5,249.4 495.5,249.4 459.6,244.1 428.1,237.0 428.1,236.0 428.1,236.0 428.1,236.0 418.6,235.3 95.7,232.1 95.7,232.1 95.7,232.1 95.7,232.1 94.6,230.4 90.2,228.3 90.2,228.3 92.4,227.0 92.4,227.0 81.4,187.0 79.5,69.1 76.6,61.4"></polyline>
+  <circle cx="495.5" cy="249.4" r="8.0" fill="rgb(110,231,183)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_soq_up+m_base_down | score=6.47 dur=14.6h dd=1.4%</title></circle><circle cx="495.5" cy="249.4" r="8.0" fill="rgb(110,231,183)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_soq_up+m_nso_down | score=6.47 dur=14.6h dd=1.4%</title></circle><circle cx="495.5" cy="249.4" r="8.0" fill="rgb(110,231,183)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_nso_up+m_nso_up | score=6.47 dur=14.6h dd=1.4%</title></circle><circle cx="498.0" cy="254.4" r="7.5" fill="rgb(137,223,154)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_step_up+m_soq_up | score=6.00 dur=14.7h dd=1.2%</title></circle><circle cx="643.4" cy="258.6" r="7.3" fill="rgb(150,219,140)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_martvol_up+m_base_down | score=5.79 dur=18.6h dd=1.0%</title></circle><circle cx="95.7" cy="232.1" r="6.9" fill="rgb(170,213,120)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_duration_up+m_sl_down | score=5.46 dur=3.7h dd=2.2%</title></circle><circle cx="95.7" cy="232.1" r="6.9" fill="rgb(170,213,120)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_duration_up+m_tp_down | score=5.46 dur=3.7h dd=2.2%</title></circle><circle cx="95.7" cy="232.1" r="6.9" fill="rgb(170,213,120)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_nso_down+m_sl_down | score=5.46 dur=3.7h dd=2.2%</title></circle><circle cx="95.7" cy="232.1" r="6.9" fill="rgb(170,213,120)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_sl_up+m_nso_down | score=5.46 dur=3.7h dd=2.2%</title></circle><circle cx="428.1" cy="236.0" r="6.9" fill="rgb(172,213,118)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_sl_up+m_tp_down | score=5.42 dur=12.8h dd=2.1%</title></circle><circle cx="428.1" cy="236.0" r="6.9" fill="rgb(172,213,118)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_tp_down+m_sl_down | score=5.42 dur=12.8h dd=2.1%</title></circle><circle cx="428.1" cy="236.0" r="6.9" fill="rgb(172,213,118)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_base_up+m_tp_down | score=5.42 dur=12.8h dd=2.1%</title></circle><circle cx="94.6" cy="230.4" r="6.9" fill="rgb(172,213,117)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_soq_up+m_martvol_down | score=5.41 dur=3.6h dd=2.3%</title></circle><circle cx="92.4" cy="227.0" r="6.9" fill="rgb(173,212,116)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_duration_down+m_nso_down | score=5.40 dur=3.6h dd=2.5%</title></circle><circle cx="92.4" cy="227.0" r="6.9" fill="rgb(173,212,116)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_base_up+m_nso_up | score=5.40 dur=3.6h dd=2.5%</title></circle><circle cx="90.2" cy="228.3" r="6.8" fill="rgb(175,212,114)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_base_down+m_nso_down | score=5.37 dur=3.5h dd=2.4%</title></circle><circle cx="90.2" cy="228.3" r="6.8" fill="rgb(175,212,114)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_base_down+m_soq_down | score=5.37 dur=3.5h dd=2.4%</title></circle><circle cx="428.1" cy="237.0" r="6.8" fill="rgb(175,212,114)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_tp_down+m_nso_down | score=5.36 dur=12.8h dd=2.0%</title></circle><circle cx="468.7" cy="253.9" r="6.7" fill="rgb(183,210,106)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_soq_down+m_tp_down | score=5.24 dur=13.9h dd=1.2%</title></circle><circle cx="418.6" cy="235.3" r="6.5" fill="rgb(192,207,96)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_tp_down+m_martvol_up | score=5.08 dur=12.5h dd=2.1%</title></circle><circle cx="459.6" cy="244.1" r="6.4" fill="rgb(201,205,88)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_martstep_up+m_tp_down | score=4.94 dur=13.6h dd=1.7%</title></circle><circle cx="81.4" cy="187.0" r="5.4" fill="rgb(250,187,39)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_tp_down+m_duration_down | score=4.00 dur=3.3h dd=4.3%</title></circle><circle cx="618.9" cy="255.9" r="5.1" fill="rgb(250,180,46)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_martstep_up+m_soq_down | score=3.76 dur=18.0h dd=1.1%</title></circle><circle cx="76.6" cy="61.4" r="3.0" fill="rgb(248,113,112)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_duration_down+m_step_down | score=1.74 dur=3.2h dd=10.2%</title></circle><circle cx="79.5" cy="69.1" r="3.0" fill="rgb(248,113,113)" stroke="#0b1220" stroke-width="1" opacity="0.85"><title>m_step_down+m_sl_up | score=1.72 dur=3.2h dd=9.9%</title></circle>
+  <text class="axis-label" x="360" y="315" text-anchor="middle">avg deal duration (h)</text>
+  <text class="axis-label" x="12" y="160" text-anchor="middle" transform="rotate(-90 12 160)">max drawdown (%)</text>
+</svg>
+<div class="sub" style="margin-top:8px">25 Pareto-nondominated configs. Larger + greener = higher score. Polyline = frontier (low-DD to short-duration).</div>
+
 </div>
 
-<h2>Top 50 robust configs (positive on BOTH 4h and 1d)</h2>
+<h2>Top 25 Pareto configs</h2>
 <div class="card">
-<table id="robust50">
-  <thead>
-    <tr>
-      <th>#</th><th>Config</th>
-      <th>4h ret</th><th>4h n</th><th>4h WR</th><th>4h PF</th>
-      <th>1d ret</th><th>1d n</th><th>1d WR</th><th>1d PF</th>
-      <th>Sum</th>
-    </tr>
-  </thead>
-  <tbody>
-    
+  <table>
+    <thead>
+      <tr>
+        <th>Mutators</th>
+        <th>Score</th>
+        <th>Return</th>
+        <th>WR</th>
+        <th>Deals</th>
+        <th>Dur</th>
+        <th>DD</th>
+        <th>Sharpe</th>
+        <th>When</th>
+        <th>Bot</th>
+      </tr>
+    </thead>
+    <tbody>
         <tr>
-          <td>1</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+301.63%</td>
-          <td>5</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>4.10</td>
-          <td><strong>+793.60%</strong></td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+234.66%</td>
-          <td>5</td>
-          <td>80%</td>
-          <td>9.72</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>5.47</td>
-          <td><strong>+767.44%</strong></td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+149.22%</td>
-          <td>6</td>
-          <td>50%</td>
-          <td>3.00</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>8.21</td>
-          <td><strong>+722.80%</strong></td>
-        </tr>
-        <tr>
-          <td>4</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+227.68%</td>
-          <td>7</td>
-          <td>71%</td>
-          <td>4.34</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>4.10</td>
-          <td><strong>+719.65%</strong></td>
-        </tr>
-        <tr>
-          <td>5</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+183.11%</td>
-          <td>7</td>
-          <td>57%</td>
-          <td>3.35</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>5.47</td>
-          <td><strong>+715.89%</strong></td>
-        </tr>
-        <tr>
-          <td>6</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+198.41%</td>
-          <td>6</td>
-          <td>83%</td>
-          <td>3.75</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>4.10</td>
-          <td><strong>+690.38%</strong></td>
-        </tr>
-        <tr>
-          <td>7</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+115.74%</td>
-          <td>7</td>
-          <td>43%</td>
-          <td>2.08</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>8.21</td>
-          <td><strong>+689.32%</strong></td>
-        </tr>
-        <tr>
-          <td>8</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+114.83%</td>
-          <td>8</td>
-          <td>38%</td>
-          <td>2.06</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>8.21</td>
-          <td><strong>+688.42%</strong></td>
-        </tr>
-        <tr>
-          <td>9</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
-          <td class="pos">+272.28%</td>
-          <td>8</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+688.17%</strong></td>
-        </tr>
-        <tr>
-          <td>10</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+272.28%</td>
-          <td>8</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+688.17%</strong></td>
-        </tr>
-        <tr>
-          <td>11</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+150.39%</td>
-          <td>6</td>
-          <td>67%</td>
-          <td>2.86</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>5.47</td>
-          <td><strong>+683.17%</strong></td>
-        </tr>
-        <tr>
-          <td>12</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+103.93%</td>
-          <td>8</td>
-          <td>38%</td>
-          <td>1.87</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>8.21</td>
-          <td><strong>+677.52%</strong></td>
-        </tr>
-        <tr>
-          <td>13</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+260.70%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>5.81</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+676.60%</strong></td>
-        </tr>
-        <tr>
-          <td>14</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+260.70%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>5.81</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+676.60%</strong></td>
-        </tr>
-        <tr>
-          <td>15</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+132.84%</td>
-          <td>7</td>
-          <td>57%</td>
-          <td>2.35</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>5.47</td>
-          <td><strong>+665.62%</strong></td>
-        </tr>
-        <tr>
-          <td>16</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+170.00%</td>
-          <td>7</td>
-          <td>71%</td>
-          <td>2.78</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>4.10</td>
-          <td><strong>+661.97%</strong></td>
-        </tr>
-        <tr>
-          <td>17</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
-          <td class="pos">+242.23%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>4.36</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+658.13%</strong></td>
-        </tr>
-        <tr>
-          <td>18</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=2.0x TP=2.0x hold=30b</code></td>
-          <td class="pos">+242.23%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>4.36</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+658.13%</strong></td>
-        </tr>
-        <tr>
-          <td>19</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=4.0x hold=30b</code></td>
-          <td class="pos">+294.58%</td>
-          <td>5</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td class="pos">+361.03%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>3.29</td>
-          <td><strong>+655.61%</strong></td>
-        </tr>
-        <tr>
-          <td>20</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+81.47%</td>
-          <td>9</td>
+          <td><code>m_soq_up+m_base_down</code></td>
+          <td><strong>6.47</strong></td>
+          <td>+1.18%</td>
           <td>33%</td>
-          <td>1.58</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>8.21</td>
-          <td><strong>+655.05%</strong></td>
-        </tr>
-        <tr>
-          <td>21</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+81.47%</td>
-          <td>9</td>
-          <td>33%</td>
-          <td>1.58</td>
-          <td class="pos">+573.58%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>8.21</td>
-          <td><strong>+655.05%</strong></td>
-        </tr>
-        <tr>
-          <td>22</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
-          <td class="pos">+231.84%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>5.28</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+647.74%</strong></td>
-        </tr>
-        <tr>
-          <td>23</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
-          <td class="pos">+231.84%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>5.28</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+647.74%</strong></td>
-        </tr>
-        <tr>
-          <td>24</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.5x TP=2.0x hold=20b</code></td>
-          <td class="pos">+227.94%</td>
-          <td>8</td>
-          <td>88%</td>
-          <td>20.43</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+643.84%</strong></td>
-        </tr>
-        <tr>
-          <td>25</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=2.0x TP=2.0x hold=20b</code></td>
-          <td class="pos">+227.94%</td>
-          <td>8</td>
-          <td>88%</td>
-          <td>20.43</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+643.84%</strong></td>
-        </tr>
-        <tr>
-          <td>26</td>
-          <td><code>RSI=21 MACD=8/21 piv=3 div=3 px=0.003 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+128.56%</td>
-          <td>7</td>
-          <td>43%</td>
-          <td>2.35</td>
-          <td class="pos">+508.65%</td>
-          <td>4</td>
-          <td>50%</td>
-          <td>4.57</td>
-          <td><strong>+637.21%</strong></td>
-        </tr>
-        <tr>
-          <td>27</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+216.58%</td>
-          <td>8</td>
-          <td>88%</td>
-          <td>5.00</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+632.48%</strong></td>
-        </tr>
-        <tr>
-          <td>28</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+99.27%</td>
-          <td>8</td>
-          <td>50%</td>
-          <td>1.75</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>5.47</td>
-          <td><strong>+632.04%</strong></td>
-        </tr>
-        <tr>
-          <td>29</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+99.27%</td>
-          <td>8</td>
-          <td>50%</td>
-          <td>1.75</td>
-          <td class="pos">+532.78%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>5.47</td>
-          <td><strong>+632.04%</strong></td>
-        </tr>
-        <tr>
-          <td>30</td>
-          <td><code>RSI=14 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+260.70%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>5.81</td>
-          <td class="pos">+369.94%</td>
-          <td>5</td>
-          <td>80%</td>
-          <td>4.07</td>
-          <td><strong>+630.64%</strong></td>
-        </tr>
-        <tr>
-          <td>31</td>
-          <td><code>RSI=14 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+260.70%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>5.81</td>
-          <td class="pos">+369.94%</td>
-          <td>5</td>
-          <td>80%</td>
-          <td>4.07</td>
-          <td><strong>+630.64%</strong></td>
-        </tr>
-        <tr>
-          <td>32</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=2.0x TP=2.0x hold=20b</code></td>
-          <td class="pos">+213.42%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>3.96</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+629.31%</strong></td>
-        </tr>
-        <tr>
-          <td>33</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=2.0x TP=2.0x hold=20b</code></td>
-          <td class="pos">+213.42%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>3.96</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+629.31%</strong></td>
-        </tr>
-        <tr>
-          <td>34</td>
-          <td><code>RSI=21 MACD=8/21 piv=3 div=3 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+113.44%</td>
-          <td>8</td>
-          <td>38%</td>
-          <td>2.03</td>
-          <td class="pos">+508.65%</td>
-          <td>4</td>
-          <td>50%</td>
-          <td>4.57</td>
-          <td><strong>+622.09%</strong></td>
-        </tr>
-        <tr>
-          <td>35</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=3 px=0.005 SL=1.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+113.44%</td>
-          <td>8</td>
-          <td>38%</td>
-          <td>2.03</td>
-          <td class="pos">+508.65%</td>
-          <td>4</td>
-          <td>50%</td>
-          <td>4.57</td>
-          <td><strong>+622.09%</strong></td>
-        </tr>
-        <tr>
-          <td>36</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+205.60%</td>
-          <td>6</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+621.50%</strong></td>
-        </tr>
-        <tr>
-          <td>37</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.005 SL=2.0x TP=2.0x hold=30b</code></td>
-          <td class="pos">+205.60%</td>
-          <td>6</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+621.50%</strong></td>
-        </tr>
-        <tr>
-          <td>38</td>
-          <td><code>RSI=10 MACD=8/21 piv=5 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+381.93%</td>
-          <td>9</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td class="pos">+239.46%</td>
-          <td>4</td>
-          <td>75%</td>
-          <td>2.99</td>
-          <td><strong>+621.39%</strong></td>
-        </tr>
-        <tr>
-          <td>39</td>
-          <td><code>RSI=10 MACD=8/21 piv=7 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+381.93%</td>
-          <td>9</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td class="pos">+239.46%</td>
-          <td>4</td>
-          <td>75%</td>
-          <td>2.99</td>
-          <td><strong>+621.39%</strong></td>
-        </tr>
-        <tr>
-          <td>40</td>
-          <td><code>RSI=14 MACD=8/21 piv=10 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+260.70%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>5.81</td>
-          <td class="pos">+357.99%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+618.69%</strong></td>
-        </tr>
-        <tr>
-          <td>41</td>
-          <td><code>RSI=14 MACD=8/26 piv=10 div=5 px=0.01 SL=1.5x TP=2.0x hold=30b</code></td>
-          <td class="pos">+260.70%</td>
-          <td>9</td>
-          <td>89%</td>
-          <td>5.81</td>
-          <td class="pos">+357.99%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+618.69%</strong></td>
-        </tr>
-        <tr>
-          <td>42</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.01 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+125.21%</td>
-          <td>8</td>
-          <td>62%</td>
-          <td>1.90</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>4.10</td>
-          <td><strong>+617.18%</strong></td>
-        </tr>
-        <tr>
-          <td>43</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=5 px=0.01 SL=2.0x TP=5.0x hold=30b</code></td>
-          <td class="pos">+125.21%</td>
-          <td>8</td>
-          <td>62%</td>
-          <td>1.90</td>
-          <td class="pos">+491.97%</td>
-          <td>3</td>
-          <td>67%</td>
-          <td>4.10</td>
-          <td><strong>+617.18%</strong></td>
-        </tr>
-        <tr>
-          <td>44</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=3 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+181.00%</td>
-          <td>7</td>
-          <td>57%</td>
-          <td>3.26</td>
-          <td class="pos">+436.00%</td>
-          <td>4</td>
-          <td>50%</td>
-          <td>3.05</td>
-          <td><strong>+617.01%</strong></td>
-        </tr>
-        <tr>
-          <td>45</td>
-          <td><code>RSI=21 MACD=8/21 piv=3 div=3 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+181.00%</td>
-          <td>7</td>
-          <td>57%</td>
-          <td>3.26</td>
-          <td class="pos">+436.00%</td>
-          <td>4</td>
-          <td>50%</td>
-          <td>3.05</td>
-          <td><strong>+617.01%</strong></td>
-        </tr>
-        <tr>
           <td>46</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=3 px=0.01 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+181.00%</td>
-          <td>7</td>
-          <td>57%</td>
-          <td>3.26</td>
-          <td class="pos">+436.00%</td>
-          <td>4</td>
-          <td>50%</td>
-          <td>3.05</td>
-          <td><strong>+617.01%</strong></td>
+          <td>14.6h</td>
+          <td>1.4%</td>
+          <td>0.41</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_accumulator</code></td>
         </tr>
         <tr>
-          <td>47</td>
-          <td><code>RSI=21 MACD=8/21 piv=3 div=3 px=0.005 SL=1.5x TP=5.0x hold=30b</code></td>
-          <td class="pos">+181.00%</td>
-          <td>7</td>
-          <td>57%</td>
-          <td>3.26</td>
-          <td class="pos">+436.00%</td>
-          <td>4</td>
-          <td>50%</td>
-          <td>3.05</td>
-          <td><strong>+617.01%</strong></td>
+          <td><code>m_soq_up+m_nso_down</code></td>
+          <td><strong>6.47</strong></td>
+          <td>+1.18%</td>
+          <td>33%</td>
+          <td>46</td>
+          <td>14.6h</td>
+          <td>1.4%</td>
+          <td>0.41</td>
+          <td class="sub" style="font-size:10px">20:36:04</td>
+          <td><code>hbar_accumulator</code></td>
         </tr>
         <tr>
+          <td><code>m_nso_up+m_nso_up</code></td>
+          <td><strong>6.47</strong></td>
+          <td>+1.18%</td>
+          <td>33%</td>
+          <td>46</td>
+          <td>14.6h</td>
+          <td>1.4%</td>
+          <td>0.41</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_accumulator</code></td>
+        </tr>
+        <tr>
+          <td><code>m_step_up+m_soq_up</code></td>
+          <td><strong>6.00</strong></td>
+          <td>+0.78%</td>
+          <td>33%</td>
+          <td>46</td>
+          <td>14.7h</td>
+          <td>1.2%</td>
+          <td>0.35</td>
+          <td class="sub" style="font-size:10px">20:36:04</td>
+          <td><code>hbar_accumulator</code></td>
+        </tr>
+        <tr>
+          <td><code>m_martvol_up+m_base_down</code></td>
+          <td><strong>5.79</strong></td>
+          <td>+0.59%</td>
+          <td>36%</td>
+          <td>37</td>
+          <td>18.6h</td>
+          <td>1.0%</td>
+          <td>0.39</td>
+          <td class="sub" style="font-size:10px">20:36:02</td>
+          <td><code>hbar_accumulator</code></td>
+        </tr>
+        <tr>
+          <td><code>m_duration_up+m_sl_down</code></td>
+          <td><strong>5.46</strong></td>
+          <td>-0.02%</td>
+          <td>100%</td>
+          <td>154</td>
+          <td>3.7h</td>
+          <td>2.2%</td>
+          <td>0.62</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_duration_up+m_tp_down</code></td>
+          <td><strong>5.46</strong></td>
+          <td>-0.02%</td>
+          <td>100%</td>
+          <td>154</td>
+          <td>3.7h</td>
+          <td>2.2%</td>
+          <td>0.62</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_nso_down+m_sl_down</code></td>
+          <td><strong>5.46</strong></td>
+          <td>-0.02%</td>
+          <td>100%</td>
+          <td>154</td>
+          <td>3.7h</td>
+          <td>2.2%</td>
+          <td>0.62</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_sl_up+m_nso_down</code></td>
+          <td><strong>5.46</strong></td>
+          <td>-0.02%</td>
+          <td>100%</td>
+          <td>154</td>
+          <td>3.7h</td>
+          <td>2.2%</td>
+          <td>0.62</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_sl_up+m_tp_down</code></td>
+          <td><strong>5.42</strong></td>
+          <td>+0.39%</td>
+          <td>41%</td>
+          <td>52</td>
+          <td>12.8h</td>
+          <td>2.1%</td>
+          <td>0.34</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_accumulator</code></td>
+        </tr>
+        <tr>
+          <td><code>m_tp_down+m_sl_down</code></td>
+          <td><strong>5.42</strong></td>
+          <td>+0.39%</td>
+          <td>41%</td>
+          <td>52</td>
+          <td>12.8h</td>
+          <td>2.1%</td>
+          <td>0.34</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_accumulator</code></td>
+        </tr>
+        <tr>
+          <td><code>m_base_up+m_tp_down</code></td>
+          <td><strong>5.42</strong></td>
+          <td>+0.39%</td>
+          <td>41%</td>
+          <td>52</td>
+          <td>12.8h</td>
+          <td>2.1%</td>
+          <td>0.34</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_accumulator</code></td>
+        </tr>
+        <tr>
+          <td><code>m_soq_up+m_martvol_down</code></td>
+          <td><strong>5.41</strong></td>
+          <td>-0.02%</td>
+          <td>100%</td>
+          <td>155</td>
+          <td>3.6h</td>
+          <td>2.3%</td>
+          <td>0.61</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_duration_down+m_nso_down</code></td>
+          <td><strong>5.40</strong></td>
+          <td>-0.03%</td>
+          <td>97%</td>
+          <td>157</td>
+          <td>3.6h</td>
+          <td>2.5%</td>
+          <td>0.59</td>
+          <td class="sub" style="font-size:10px">20:36:04</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_base_up+m_nso_up</code></td>
+          <td><strong>5.40</strong></td>
+          <td>-0.03%</td>
+          <td>97%</td>
+          <td>157</td>
+          <td>3.6h</td>
+          <td>2.5%</td>
+          <td>0.59</td>
+          <td class="sub" style="font-size:10px">20:36:02</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_base_down+m_nso_down</code></td>
+          <td><strong>5.37</strong></td>
+          <td>-0.03%</td>
+          <td>97%</td>
+          <td>159</td>
+          <td>3.5h</td>
+          <td>2.4%</td>
+          <td>0.56</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_base_down+m_soq_down</code></td>
+          <td><strong>5.37</strong></td>
+          <td>-0.03%</td>
+          <td>97%</td>
+          <td>159</td>
+          <td>3.5h</td>
+          <td>2.4%</td>
+          <td>0.56</td>
+          <td class="sub" style="font-size:10px">20:36:02</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_tp_down+m_nso_down</code></td>
+          <td><strong>5.36</strong></td>
+          <td>+0.32%</td>
+          <td>41%</td>
+          <td>52</td>
+          <td>12.8h</td>
+          <td>2.0%</td>
+          <td>0.34</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_accumulator</code></td>
+        </tr>
+        <tr>
+          <td><code>m_soq_down+m_tp_down</code></td>
+          <td><strong>5.24</strong></td>
+          <td>-0.03%</td>
+          <td>57%</td>
           <td>48</td>
-          <td><code>RSI=21 MACD=8/21 piv=5 div=5 px=0.005 SL=2.0x TP=2.0x hold=30b</code></td>
-          <td class="pos">+198.18%</td>
-          <td>8</td>
-          <td>88%</td>
-          <td>3.75</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+614.08%</strong></td>
+          <td>13.9h</td>
+          <td>1.2%</td>
+          <td>0.36</td>
+          <td class="sub" style="font-size:10px">20:36:02</td>
+          <td><code>hbar_accumulator</code></td>
         </tr>
         <tr>
+          <td><code>m_tp_down+m_martvol_up</code></td>
+          <td><strong>5.08</strong></td>
+          <td>+0.09%</td>
+          <td>42%</td>
+          <td>53</td>
+          <td>12.5h</td>
+          <td>2.1%</td>
+          <td>0.32</td>
+          <td class="sub" style="font-size:10px">20:36:03</td>
+          <td><code>hbar_accumulator</code></td>
+        </tr>
+        <tr>
+          <td><code>m_martstep_up+m_tp_down</code></td>
+          <td><strong>4.94</strong></td>
+          <td>-0.09%</td>
+          <td>38%</td>
           <td>49</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.0x TP=2.0x hold=30b</code></td>
-          <td class="pos">+197.55%</td>
-          <td>8</td>
-          <td>88%</td>
-          <td>5.75</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+613.45%</strong></td>
+          <td>13.6h</td>
+          <td>1.7%</td>
+          <td>0.30</td>
+          <td class="sub" style="font-size:10px">20:36:02</td>
+          <td><code>hbar_accumulator</code></td>
         </tr>
         <tr>
-          <td>50</td>
-          <td><code>RSI=21 MACD=8/21 piv=7 div=3 px=0.01 SL=1.0x TP=2.0x hold=20b</code></td>
-          <td class="pos">+197.55%</td>
-          <td>8</td>
-          <td>88%</td>
-          <td>5.75</td>
-          <td class="pos">+415.90%</td>
-          <td>3</td>
-          <td>100%</td>
-          <td>∞</td>
-          <td><strong>+613.45%</strong></td>
+          <td><code>m_tp_down+m_duration_down</code></td>
+          <td><strong>4.00</strong></td>
+          <td>-0.11%</td>
+          <td>96%</td>
+          <td>168</td>
+          <td>3.3h</td>
+          <td>4.3%</td>
+          <td>0.21</td>
+          <td class="sub" style="font-size:10px">20:36:02</td>
+          <td><code>hbar_scalper_tight</code></td>
         </tr>
-  </tbody>
-</table>
+        <tr>
+          <td><code>m_martstep_up+m_soq_down</code></td>
+          <td><strong>3.76</strong></td>
+          <td>-1.09%</td>
+          <td>41%</td>
+          <td>38</td>
+          <td>18.0h</td>
+          <td>1.1%</td>
+          <td>0.22</td>
+          <td class="sub" style="font-size:10px">20:36:02</td>
+          <td><code>hbar_accumulator</code></td>
+        </tr>
+        <tr>
+          <td><code>m_duration_down+m_step_down</code></td>
+          <td><strong>1.74</strong></td>
+          <td>-0.27%</td>
+          <td>96%</td>
+          <td>172</td>
+          <td>3.2h</td>
+          <td>10.2%</td>
+          <td>0.04</td>
+          <td class="sub" style="font-size:10px">20:36:02</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr>
+        <tr>
+          <td><code>m_step_down+m_sl_up</code></td>
+          <td><strong>1.72</strong></td>
+          <td>-0.32%</td>
+          <td>98%</td>
+          <td>169</td>
+          <td>3.2h</td>
+          <td>9.9%</td>
+          <td>0.00</td>
+          <td class="sub" style="font-size:10px">20:36:02</td>
+          <td><code>hbar_scalper_tight</code></td>
+        </tr></tbody>
+  </table>
 </div>
 
-<h2>Multi-asset cross-test (4h, 120 days, 3 configs × 5 pairs)</h2>
+<h2>Per-bot drill-down — top configs</h2>
 <div class="card">
-<table class="multi-table" id="multi">
-  <thead>
-    <tr>
-      <th>Config</th>
-      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">HBAR/USD</th>
-      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">SOL/USD</th>
-      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">ETH/USD</th>
-      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">BTC/USD</th>
-      <th colspan="5" style="text-align:center; border-left: 1px solid #1e293b">XRP/USD</th>
-    </tr>
-    <tr>
-      <th></th>
-<th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th><th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th><th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th><th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th><th style="border-left: 1px solid #1e293b">ret</th><th style="border-left: 1px solid #1e293b">n</th><th style="border-left: 1px solid #1e293b">wr</th><th style="border-left: 1px solid #1e293b">pf</th><th style="border-left: 1px solid #1e293b">dd</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><strong>A_1to1</strong></td><td class="pos">+3.83%</td><td>4</td><td>75%</td><td>2.81</td><td>2.0%</td><td class="pos">+1.83%</td><td>3</td><td>67%</td><td>1.88</td><td>2.0%</td><td class="neg">-2.00%</td><td>1</td><td>0%</td><td>0.00</td><td>2.0%</td><td class="pos">+4.04%</td><td>2</td><td>100%</td><td>∞</td><td>0.0%</td><td class="pos">+2.52%</td><td>2</td><td>100%</td><td>∞</td><td>0.0%</td></tr><tr><td><strong>C_mid</strong></td><td class="neg">-2.05%</td><td>1</td><td>0%</td><td>0.00</td><td>2.1%</td><td class="neg">+0.00%</td><td>0</td><td>0%</td><td>0.00</td><td>0.0%</td><td class="neg">-1.84%</td><td>1</td><td>0%</td><td>0.00</td><td>1.8%</td><td class="neg">-0.37%</td><td>2</td><td>50%</td><td>0.79</td><td>1.7%</td><td class="neg">-2.00%</td><td>1</td><td>0%</td><td>0.00</td><td>2.0%</td></tr><tr><td><strong>B_1to5</strong></td><td class="neg">-1.48%</td><td>1</td><td>0%</td><td>0.00</td><td>1.5%</td><td class="neg">+0.00%</td><td>0</td><td>0%</td><td>0.00</td><td>0.0%</td><td class="neg">-1.23%</td><td>1</td><td>0%</td><td>0.00</td><td>1.2%</td><td class="pos">+0.21%</td><td>2</td><td>50%</td><td>1.18</td><td>1.1%</td><td class="neg">-3.20%</td><td>2</td><td>0%</td><td>0.00</td><td>3.2%</td></tr>
-  </tbody>
-</table>
-<div class="sub" style="margin-top:8px">A_1to1: SL=2× TP=2×, R:R=1:1. C_mid: SL=1.5× TP=4×, R:R=1:3. B_1to5: SL=1× TP=5×, R:R=1:5. RSI=21, MACD=8/21, piv=7, prox=0.5% or 1% on all configs.</div>
+  
+<details>
+  <summary><strong>btc_long_demo</strong> — 76 valid configs</summary>
+  <div class="card" style="margin-top:12px">
+    <table>
+      <thead>
+        <tr>
+          <th>Mutators</th>
+          <th>Score</th>
+          <th>Return</th>
+          <th>Win rate</th>
+          <th>Deals</th>
+          <th>Avg dur</th>
+          <th>Max DD</th>
+          <th>Sharpe</th>
+          <th>When</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td><code>m_base_down+m_soq_down</code></td>
+              <td><strong>4.61</strong></td>
+              <td class="pos">+0.14%</td>
+              <td>58%</td>
+              <td>48</td>
+              <td>14.0h</td>
+              <td>2.6%</td>
+              <td>0.16</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_down+m_sl_up</code></td>
+              <td><strong>4.57</strong></td>
+              <td class="pos">+0.09%</td>
+              <td>57%</td>
+              <td>47</td>
+              <td>14.3h</td>
+              <td>2.4%</td>
+              <td>0.15</td>
+              <td class="sub" style="font-size:10px">20:36:04</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_up+m_base_down</code></td>
+              <td><strong>4.42</strong></td>
+              <td class="pos">+0.14%</td>
+              <td>58%</td>
+              <td>48</td>
+              <td>14.0h</td>
+              <td>3.2%</td>
+              <td>0.16</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_sl_down+m_sl_down</code></td>
+              <td><strong>4.42</strong></td>
+              <td class="pos">+0.14%</td>
+              <td>58%</td>
+              <td>48</td>
+              <td>14.0h</td>
+              <td>3.2%</td>
+              <td>0.16</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_step_up+m_martvol_up</code></td>
+              <td><strong>4.13</strong></td>
+              <td class="pos">-0.64%</td>
+              <td>54%</td>
+              <td>47</td>
+              <td>14.2h</td>
+              <td>1.7%</td>
+              <td>0.18</td>
+              <td class="sub" style="font-size:10px">20:36:04</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_soq_down+m_nso_up</code></td>
+              <td><strong>2.81</strong></td>
+              <td class="pos">-0.33%</td>
+              <td>52%</td>
+              <td>48</td>
+              <td>14.0h</td>
+              <td>5.9%</td>
+              <td>-0.03</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_martstep_up+m_soq_down</code></td>
+              <td><strong>2.55</strong></td>
+              <td class="pos">-0.55%</td>
+              <td>52%</td>
+              <td>48</td>
+              <td>14.0h</td>
+              <td>6.0%</td>
+              <td>-0.11</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_up+m_martstep_up</code></td>
+              <td><strong>2.28</strong></td>
+              <td class="pos">-0.50%</td>
+              <td>53%</td>
+              <td>49</td>
+              <td>13.7h</td>
+              <td>7.1%</td>
+              <td>-0.09</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_base_down+m_martvol_up</code></td>
+              <td><strong>2.19</strong></td>
+              <td class="pos">-0.54%</td>
+              <td>53%</td>
+              <td>49</td>
+              <td>13.7h</td>
+              <td>7.3%</td>
+              <td>-0.11</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_up+m_nso_up</code></td>
+              <td><strong>2.10</strong></td>
+              <td class="pos">-0.57%</td>
+              <td>52%</td>
+              <td>48</td>
+              <td>14.0h</td>
+              <td>7.5%</td>
+              <td>-0.12</td>
+              <td class="sub" style="font-size:10px">20:36:02</td>
+              <td class="pos">keep</td>
+            </tr></tbody>
+    </table>
+  </div>
+</details>
+<details>
+  <summary><strong>hbar_accumulator</strong> — 65 valid configs</summary>
+  <div class="card" style="margin-top:12px">
+    <table>
+      <thead>
+        <tr>
+          <th>Mutators</th>
+          <th>Score</th>
+          <th>Return</th>
+          <th>Win rate</th>
+          <th>Deals</th>
+          <th>Avg dur</th>
+          <th>Max DD</th>
+          <th>Sharpe</th>
+          <th>When</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td><code>m_soq_up+m_base_down</code></td>
+              <td><strong>6.47</strong></td>
+              <td class="pos">+1.18%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.4%</td>
+              <td>0.41</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_nso_up+m_nso_up</code></td>
+              <td><strong>6.47</strong></td>
+              <td class="pos">+1.18%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.4%</td>
+              <td>0.41</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_soq_up+m_nso_down</code></td>
+              <td><strong>6.47</strong></td>
+              <td class="pos">+1.18%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.4%</td>
+              <td>0.41</td>
+              <td class="sub" style="font-size:10px">20:36:04</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_sl_up+m_soq_up</code></td>
+              <td><strong>6.24</strong></td>
+              <td class="pos">+1.01%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.6%</td>
+              <td>0.41</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_soq_up+m_sl_down</code></td>
+              <td><strong>6.24</strong></td>
+              <td class="pos">+1.01%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.6%</td>
+              <td>0.41</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_nso_down+m_martvol_down</code></td>
+              <td><strong>6.17</strong></td>
+              <td class="pos">+0.93%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.5%</td>
+              <td>0.40</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_nso_down+m_martvol_down</code></td>
+              <td><strong>6.13</strong></td>
+              <td class="pos">+0.89%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.5%</td>
+              <td>0.40</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_down+m_nso_down</code></td>
+              <td><strong>6.13</strong></td>
+              <td class="pos">+0.89%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.5%</td>
+              <td>0.40</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_martstep_down+m_duration_down</code></td>
+              <td><strong>6.11</strong></td>
+              <td class="pos">+0.90%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.6%</td>
+              <td>0.39</td>
+              <td class="sub" style="font-size:10px">20:36:02</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_nso_up+m_sl_up</code></td>
+              <td><strong>6.11</strong></td>
+              <td class="pos">+0.90%</td>
+              <td>33%</td>
+              <td>46</td>
+              <td>14.6h</td>
+              <td>1.6%</td>
+              <td>0.39</td>
+              <td class="sub" style="font-size:10px">20:36:02</td>
+              <td class="neg">discard-dom</td>
+            </tr></tbody>
+    </table>
+  </div>
+</details>
+<details>
+  <summary><strong>hbar_dca_safe</strong> — 5 valid configs</summary>
+  <div class="card" style="margin-top:12px">
+    <table>
+      <thead>
+        <tr>
+          <th>Mutators</th>
+          <th>Score</th>
+          <th>Return</th>
+          <th>Win rate</th>
+          <th>Deals</th>
+          <th>Avg dur</th>
+          <th>Max DD</th>
+          <th>Sharpe</th>
+          <th>When</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td><code>m_step_down+m_base_down</code></td>
+              <td><strong>-1.71</strong></td>
+              <td class="pos">-1.36%</td>
+              <td>32%</td>
+              <td>23</td>
+              <td>31.1h</td>
+              <td>2.2%</td>
+              <td>0.11</td>
+              <td class="sub" style="font-size:10px">20:36:02</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_step_down+m_base_down</code></td>
+              <td><strong>-1.71</strong></td>
+              <td class="pos">-1.36%</td>
+              <td>32%</td>
+              <td>23</td>
+              <td>31.1h</td>
+              <td>2.2%</td>
+              <td>0.11</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_base_down+m_step_down</code></td>
+              <td><strong>-1.71</strong></td>
+              <td class="pos">-1.36%</td>
+              <td>32%</td>
+              <td>23</td>
+              <td>31.1h</td>
+              <td>2.2%</td>
+              <td>0.11</td>
+              <td class="sub" style="font-size:10px">20:36:04</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_step_down+m_tp_down</code></td>
+              <td><strong>-1.93</strong></td>
+              <td class="pos">-1.76%</td>
+              <td>35%</td>
+              <td>24</td>
+              <td>29.6h</td>
+              <td>2.3%</td>
+              <td>0.08</td>
+              <td class="sub" style="font-size:10px">20:36:02</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_martstep_down+m_tp_down</code></td>
+              <td><strong>-2.97</strong></td>
+              <td class="pos">-2.53%</td>
+              <td>30%</td>
+              <td>24</td>
+              <td>29.7h</td>
+              <td>2.6%</td>
+              <td>-0.13</td>
+              <td class="sub" style="font-size:10px">20:36:02</td>
+              <td class="neg">discard-dom</td>
+            </tr></tbody>
+    </table>
+  </div>
+</details>
+<details>
+  <summary><strong>hbar_scalper_tight</strong> — 74 valid configs</summary>
+  <div class="card" style="margin-top:12px">
+    <table>
+      <thead>
+        <tr>
+          <th>Mutators</th>
+          <th>Score</th>
+          <th>Return</th>
+          <th>Win rate</th>
+          <th>Deals</th>
+          <th>Avg dur</th>
+          <th>Max DD</th>
+          <th>Sharpe</th>
+          <th>When</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td><code>m_duration_up+m_tp_down</code></td>
+              <td><strong>5.46</strong></td>
+              <td class="pos">-0.02%</td>
+              <td>100%</td>
+              <td>154</td>
+              <td>3.7h</td>
+              <td>2.2%</td>
+              <td>0.62</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_duration_up+m_sl_down</code></td>
+              <td><strong>5.46</strong></td>
+              <td class="pos">-0.02%</td>
+              <td>100%</td>
+              <td>154</td>
+              <td>3.7h</td>
+              <td>2.2%</td>
+              <td>0.62</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_nso_down+m_sl_down</code></td>
+              <td><strong>5.46</strong></td>
+              <td class="pos">-0.02%</td>
+              <td>100%</td>
+              <td>154</td>
+              <td>3.7h</td>
+              <td>2.2%</td>
+              <td>0.62</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_sl_up+m_nso_down</code></td>
+              <td><strong>5.46</strong></td>
+              <td class="pos">-0.02%</td>
+              <td>100%</td>
+              <td>154</td>
+              <td>3.7h</td>
+              <td>2.2%</td>
+              <td>0.62</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_soq_up+m_martvol_down</code></td>
+              <td><strong>5.41</strong></td>
+              <td class="pos">-0.02%</td>
+              <td>100%</td>
+              <td>155</td>
+              <td>3.6h</td>
+              <td>2.3%</td>
+              <td>0.61</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_base_up+m_nso_up</code></td>
+              <td><strong>5.40</strong></td>
+              <td class="pos">-0.03%</td>
+              <td>97%</td>
+              <td>157</td>
+              <td>3.6h</td>
+              <td>2.5%</td>
+              <td>0.59</td>
+              <td class="sub" style="font-size:10px">20:36:02</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_duration_down+m_nso_down</code></td>
+              <td><strong>5.40</strong></td>
+              <td class="pos">-0.03%</td>
+              <td>97%</td>
+              <td>157</td>
+              <td>3.6h</td>
+              <td>2.5%</td>
+              <td>0.59</td>
+              <td class="sub" style="font-size:10px">20:36:04</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_base_down+m_soq_down</code></td>
+              <td><strong>5.37</strong></td>
+              <td class="pos">-0.03%</td>
+              <td>97%</td>
+              <td>159</td>
+              <td>3.5h</td>
+              <td>2.4%</td>
+              <td>0.56</td>
+              <td class="sub" style="font-size:10px">20:36:02</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_base_down+m_nso_down</code></td>
+              <td><strong>5.37</strong></td>
+              <td class="pos">-0.03%</td>
+              <td>97%</td>
+              <td>159</td>
+              <td>3.5h</td>
+              <td>2.4%</td>
+              <td>0.56</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_up+m_base_down</code></td>
+              <td><strong>5.24</strong></td>
+              <td class="pos">-0.03%</td>
+              <td>98%</td>
+              <td>160</td>
+              <td>3.5h</td>
+              <td>2.7%</td>
+              <td>0.54</td>
+              <td class="sub" style="font-size:10px">20:36:02</td>
+              <td class="neg">discard-dom</td>
+            </tr></tbody>
+    </table>
+  </div>
+</details>
+<details>
+  <summary><strong>hbar_scalper_v1</strong> — 75 valid configs</summary>
+  <div class="card" style="margin-top:12px">
+    <table>
+      <thead>
+        <tr>
+          <th>Mutators</th>
+          <th>Score</th>
+          <th>Return</th>
+          <th>Win rate</th>
+          <th>Deals</th>
+          <th>Avg dur</th>
+          <th>Max DD</th>
+          <th>Sharpe</th>
+          <th>When</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td><code>m_martvol_down+m_base_down</code></td>
+              <td><strong>4.50</strong></td>
+              <td class="pos">+0.25%</td>
+              <td>76%</td>
+              <td>72</td>
+              <td>9.0h</td>
+              <td>4.6%</td>
+              <td>0.32</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_sl_down+m_soq_down</code></td>
+              <td><strong>4.26</strong></td>
+              <td class="pos">+0.27%</td>
+              <td>78%</td>
+              <td>72</td>
+              <td>9.0h</td>
+              <td>5.6%</td>
+              <td>0.33</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_down+m_soq_up</code></td>
+              <td><strong>4.15</strong></td>
+              <td class="pos">+0.25%</td>
+              <td>76%</td>
+              <td>72</td>
+              <td>9.0h</td>
+              <td>5.8%</td>
+              <td>0.32</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_down+m_nso_up</code></td>
+              <td><strong>4.14</strong></td>
+              <td class="pos">+0.16%</td>
+              <td>73%</td>
+              <td>64</td>
+              <td>10.2h</td>
+              <td>5.1%</td>
+              <td>0.26</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_up+m_sl_down</code></td>
+              <td><strong>4.13</strong></td>
+              <td class="pos">+0.16%</td>
+              <td>73%</td>
+              <td>64</td>
+              <td>10.2h</td>
+              <td>5.1%</td>
+              <td>0.26</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_tp_up+m_martvol_up</code></td>
+              <td><strong>3.88</strong></td>
+              <td class="pos">+0.15%</td>
+              <td>73%</td>
+              <td>64</td>
+              <td>10.2h</td>
+              <td>5.9%</td>
+              <td>0.25</td>
+              <td class="sub" style="font-size:10px">20:36:01</td>
+              <td class="pos">keep</td>
+            </tr>
+            <tr>
+              <td><code>m_nso_down+m_martvol_up</code></td>
+              <td><strong>3.88</strong></td>
+              <td class="pos">+0.15%</td>
+              <td>73%</td>
+              <td>64</td>
+              <td>10.2h</td>
+              <td>5.9%</td>
+              <td>0.25</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_martvol_up+m_nso_down</code></td>
+              <td><strong>3.88</strong></td>
+              <td class="pos">+0.15%</td>
+              <td>73%</td>
+              <td>64</td>
+              <td>10.2h</td>
+              <td>5.9%</td>
+              <td>0.25</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_sl_down+m_martvol_up</code></td>
+              <td><strong>3.88</strong></td>
+              <td class="pos">+0.15%</td>
+              <td>73%</td>
+              <td>64</td>
+              <td>10.2h</td>
+              <td>5.9%</td>
+              <td>0.25</td>
+              <td class="sub" style="font-size:10px">20:36:03</td>
+              <td class="neg">discard-dom</td>
+            </tr>
+            <tr>
+              <td><code>m_tp_down+m_soq_down</code></td>
+              <td><strong>3.85</strong></td>
+              <td class="pos">-0.12%</td>
+              <td>85%</td>
+              <td>96</td>
+              <td>6.6h</td>
+              <td>4.6%</td>
+              <td>0.18</td>
+              <td class="sub" style="font-size:10px">20:36:04</td>
+              <td class="neg">discard-dom</td>
+            </tr></tbody>
+    </table>
+  </div>
+</details>
 </div>
 
-<h2>Parameter sensitivity — which knobs matter most</h2>
+<h2>Parameter sensitivity — which knob matters most</h2>
 <div class="card">
-<p style="color:#94a3b8; font-size:12.5px; margin-top:0">Average sum_return (4h+1d) per param value, sorted by spread (top-bin mean − bottom-bin mean). Bigger spread = more important knob.</p>
-<table class="sensitivity">
-  <thead>
-    <tr>
-      <th>Param</th>
-      <th>Spread (pp)</th>
-<th>7</th><th>5</th><th>10</th><th>3</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>pivot_div_lookback</code></td><td>+162.89pp</td><td title="n=4608 avg=+169.66% max=+690.38% min=-315.57%">+169.66% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+162.60% max=+793.60% min=-314.57%">+162.60% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+112.41% max=+598.49% min=-137.34%">+112.41% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+6.77% max=+178.60% min=-88.32%">+6.77% <span style="color:#666">(4608)</span></td></tr><tr><td><code>tp_atr_mult</code></td><td>+148.83pp</td><td title="n=4608 avg=+202.91% max=+688.17% min=-82.80%">+202.91% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+101.68% max=+655.61% min=-263.50%">+101.68% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+92.77% max=+793.60% min=-315.57%">+92.77% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+54.08% max=+469.41% min=-274.96%">+54.08% <span style="color:#666">(4608)</span></td></tr><tr><td><code>macd_fast</code></td><td>+97.21pp</td><td title="n=9216 avg=+161.46% max=+793.60% min=-296.72%">+161.46% <span style="color:#666">(9216)</span></td><td title="n=9216 avg=+64.25% max=+530.76% min=-315.57%">+64.25% <span style="color:#666">(9216)</span></td></tr><tr><td><code>pivot_lookback</code></td><td>+61.44pp</td><td title="n=4608 avg=+134.73% max=+793.60% min=-191.83%">+134.73% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+124.36% max=+677.52% min=-314.57%">+124.36% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+119.06% max=+618.69% min=-191.83%">+119.06% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+73.29% max=+637.21% min=-315.57%">+73.29% <span style="color:#666">(4608)</span></td></tr><tr><td><code>macd_slow</code></td><td>+53.61pp</td><td title="n=9216 avg=+139.67% max=+793.60% min=-315.57%">+139.67% <span style="color:#666">(9216)</span></td><td title="n=9216 avg=+86.05% max=+618.69% min=-315.57%">+86.05% <span style="color:#666">(9216)</span></td></tr><tr><td><code>rsi_period</code></td><td>+51.00pp</td><td title="n=4608 avg=+142.71% max=+630.64% min=-289.30%">+142.71% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+120.04% max=+793.60% min=-274.96%">+120.04% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+96.98% max=+621.39% min=-315.57%">+96.98% <span style="color:#666">(4608)</span></td><td title="n=4608 avg=+91.71% max=+598.49% min=-289.77%">+91.71% <span style="color:#666">(4608)</span></td></tr><tr><td><code>proximity_pct</code></td><td>+28.55pp</td><td title="n=6144 avg=+122.39% max=+719.65% min=-315.57%">+122.39% <span style="color:#666">(6144)</span></td><td title="n=6144 avg=+122.34% max=+793.60% min=-288.81%">+122.34% <span style="color:#666">(6144)</span></td><td title="n=6144 avg=+93.84% max=+637.21% min=-289.30%">+93.84% <span style="color:#666">(6144)</span></td></tr><tr><td><code>sl_atr_mult</code></td><td>+23.12pp</td><td title="n=6144 avg=+125.68% max=+767.44% min=-231.48%">+125.68% <span style="color:#666">(6144)</span></td><td title="n=6144 avg=+110.34% max=+793.60% min=-315.57%">+110.34% <span style="color:#666">(6144)</span></td><td title="n=6144 avg=+102.56% max=+722.80% min=-238.18%">+102.56% <span style="color:#666">(6144)</span></td></tr><tr><td><code>max_hold_bars</code></td><td>+11.93pp</td><td title="n=9216 avg=+118.82% max=+647.74% min=-272.72%">+118.82% <span style="color:#666">(9216)</span></td><td title="n=9216 avg=+106.90% max=+793.60% min=-315.57%">+106.90% <span style="color:#666">(9216)</span></td></tr>
-  </tbody>
-</table>
+  <p style="color:#94a3b8; font-size:12.5px; margin-top:0">Median score across all iterations where each mutator was the first applied (single-axis attribution). Higher = better median outcome. Use this to focus tuning on the most impactful parameters.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Mutator (single-axis)</th>
+        <th>n</th>
+        <th>Median score</th>
+        <th>Min</th>
+        <th>Max</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>m_martvol_down</code></td>
+          <td>19</td>
+          <td class="pos"><strong>4.14</strong></td>
+          <td>-2.57</td>
+          <td>6.13</td>
+        </tr>
+        <tr>
+          <td><code>m_martvol_up</code></td>
+          <td>21</td>
+          <td class="pos"><strong>3.88</strong></td>
+          <td>-2.82</td>
+          <td>5.90</td>
+        </tr>
+        <tr>
+          <td><code>m_sl_down</code></td>
+          <td>15</td>
+          <td class="pos"><strong>3.70</strong></td>
+          <td>-0.07</td>
+          <td>5.31</td>
+        </tr>
+        <tr>
+          <td><code>m_tp_down</code></td>
+          <td>20</td>
+          <td class="pos"><strong>3.70</strong></td>
+          <td>-2.89</td>
+          <td>5.42</td>
+        </tr>
+        <tr>
+          <td><code>m_soq_down</code></td>
+          <td>15</td>
+          <td class="pos"><strong>3.54</strong></td>
+          <td>-2.94</td>
+          <td>5.24</td>
+        </tr>
+        <tr>
+          <td><code>m_nso_up</code></td>
+          <td>14</td>
+          <td class="pos"><strong>3.30</strong></td>
+          <td>-3.71</td>
+          <td>6.47</td>
+        </tr>
+        <tr>
+          <td><code>m_nso_down</code></td>
+          <td>21</td>
+          <td class="pos"><strong>3.22</strong></td>
+          <td>-0.75</td>
+          <td>6.17</td>
+        </tr>
+        <tr>
+          <td><code>m_duration_down</code></td>
+          <td>18</td>
+          <td class="pos"><strong>3.21</strong></td>
+          <td>-1.17</td>
+          <td>5.40</td>
+        </tr>
+        <tr>
+          <td><code>m_sl_up</code></td>
+          <td>25</td>
+          <td class="pos"><strong>3.04</strong></td>
+          <td>-3.51</td>
+          <td>6.24</td>
+        </tr>
+        <tr>
+          <td><code>m_soq_up</code></td>
+          <td>19</td>
+          <td class="pos"><strong>2.93</strong></td>
+          <td>-3.04</td>
+          <td>6.47</td>
+        </tr>
+        <tr>
+          <td><code>m_step_up</code></td>
+          <td>12</td>
+          <td class="pos"><strong>2.65</strong></td>
+          <td>-1.54</td>
+          <td>6.00</td>
+        </tr>
+        <tr>
+          <td><code>m_martstep_up</code></td>
+          <td>16</td>
+          <td class="pos"><strong>2.60</strong></td>
+          <td>-1.11</td>
+          <td>5.15</td>
+        </tr>
+        <tr>
+          <td><code>m_base_down</code></td>
+          <td>16</td>
+          <td class="pos"><strong>2.39</strong></td>
+          <td>-1.71</td>
+          <td>5.37</td>
+        </tr>
+        <tr>
+          <td><code>m_martstep_down</code></td>
+          <td>13</td>
+          <td class="pos"><strong>1.85</strong></td>
+          <td>-2.97</td>
+          <td>6.11</td>
+        </tr>
+        <tr>
+          <td><code>m_duration_up</code></td>
+          <td>12</td>
+          <td class="pos"><strong>1.74</strong></td>
+          <td>-4.54</td>
+          <td>5.46</td>
+        </tr>
+        <tr>
+          <td><code>m_tp_up</code></td>
+          <td>9</td>
+          <td class="pos"><strong>1.73</strong></td>
+          <td>-1.73</td>
+          <td>5.47</td>
+        </tr>
+        <tr>
+          <td><code>m_base_up</code></td>
+          <td>13</td>
+          <td class="pos"><strong>1.70</strong></td>
+          <td>-1.57</td>
+          <td>5.42</td>
+        </tr>
+        <tr>
+          <td><code>m_step_down</code></td>
+          <td>17</td>
+          <td class="neg"><strong>-0.87</strong></td>
+          <td>-2.06</td>
+          <td>2.60</td>
+        </tr></tbody>
+  </table>
 </div>
 
 <details>
   <summary>Methodology & caveats</summary>
   <div class="card" style="margin-top:12px">
-    <p><strong>What "robust" means:</strong> positive return on BOTH 4h and 1d EUR/USD data over a 120-day window. Filters out over-fitted single-timeframe configs.</p>
-    <p><strong>Sample size caveat:</strong> top configs have n=3-8 trades on each timeframe over 120 days. That's <em>not</em> statistically significant on its own. The "robust" filter is doing more work than the absolute numbers — it tells you the config generalizes across timeframes, not that the returns are reliable estimates.</p>
-    <p><strong>Multi-asset test:</strong> the 3 best (4h+1d) EUR/USD configs were re-run on 5 Kraken pairs. Mixed results — A_1to1 holds up on HBAR/BTC/XRP, but C_mid and B_1to5 are noisier. This suggests the divergence signal works but the SL/TP ratio is pair-dependent.</p>
-    <p><strong>What this report does NOT do:</strong> live trading, OANDA order endpoints, walk-forward validation, regime tagging, or position sizing beyond fixed 2% per trade. The 18,432-config grid is a <em>static</em> snapshot from 2026-06-11 — no re-runs, no fresh data.</p>
+    <p><strong>Scoring:</strong> <code>score_for_user_goal()</code> from <code>hbar_backtest_v2.py</code>. Rewards short-duration profitable deals. Penalizes long holds, low win rates, high drawdowns, and small sample sizes.</p>
+    <p><strong>Hard gates:</strong> deals ≥ 8, win rate ≥ 30%, max DD ≤ 40%, avg duration ≤ 36h.</p>
+    <p><strong>Pareto dominance:</strong> (score ↑, avg_dur ↓, max_dd ↓). A new config is dominated if a prior one is at least as good on all three and strictly better on at least one.</p>
+    <p><strong>Promotion:</strong> at end of each full pass, the loop compares research-best against the live <code>bots.json</code> baseline. Only if score improves by &gt; 0.05 is the new config written to <code>bots.json</code>. The daemon must be restarted manually to pick up new params.</p>
+    <p><strong>What this report does NOT do:</strong> live trading, walk-forward validation across multiple time windows, regime tagging, multi-pair correlation analysis, or fee-aware optimization beyond the per-side 0.26% assumption. The current data is a static snapshot — re-runs of the loop will refresh this report.</p>
   </div>
 </details>
 
 <div class="footer">
-  Generated 2026-06-13 from <code>div_sweep_results.json</code> (15.8 MB, 18,432 records) and <code>div_multiasset.py</code> output. Sweep run on 2026-06-11 12:01 UTC over 120-day EUR/USD windows. Multi-asset cross-test rerun 2026-06-13. Not financial advice.
+  Generated 2026-06-30 16:40 UTC by <code>research/build_report.py</code>. Source: <code>results.tsv</code> (378 rows), <code>best_configs.json</code> (5 bots). Baseline: git <code>339aa89</code>.
 </div>
 
 </main>
